@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "MedFlow — Landing Page para Clínicas"
+version = "1.0.0"
+id = "artifacts/medflow-landing"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23266
+
+[services.development]
+run = "pnpm --filter @workspace/medflow-landing run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/medflow-landing", "run", "build" ]
+publicDir = "artifacts/medflow-landing/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23266"
+BASE_PATH = "/"

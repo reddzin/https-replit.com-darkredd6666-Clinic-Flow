@@ -1,0 +1,20 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "ga1YH9GbUsDAM0MnagXNG"
+uri = "file://artifacts/medflow-landing/public/hero-mockup.png"
+type = "image"
+title = "Medical dashboard 3D mockup"
+
+[[generated]]
+id = "ChA12FWgE-0wR-INDUlxc"
+uri = "file://artifacts/medflow-landing/public/feature-telehealth.png"
+type = "image"
+title = "Telehealth app mockup"
+
+[[generated]]
+id = "wE5H_448uKzlss0mf3hbx"
+uri = "file://artifacts/medflow-landing/public/feature-ehr.png"
+type = "image"
+title = "Electronic health record mockup"
