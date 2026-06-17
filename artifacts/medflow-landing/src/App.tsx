@@ -1,4 +1,4 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, useLocation } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,25 +18,30 @@ import Configuracoes from "@/pages/app/Configuracoes";
 const queryClient = new QueryClient();
 
 function Router() {
+  const [location] = useLocation();
+
+  if (location.startsWith("/app")) {
+    return (
+      <AppLayout>
+        <Switch>
+          <Route path="/app" component={Dashboard} />
+          <Route path="/app/agendamentos" component={Agendamentos} />
+          <Route path="/app/pacientes" component={Pacientes} />
+          <Route path="/app/prontuarios" component={Prontuarios} />
+          <Route path="/app/financeiro" component={Financeiro} />
+          <Route path="/app/relatorios" component={Relatorios} />
+          <Route path="/app/configuracoes" component={Configuracoes} />
+          <Route component={NotFound} />
+        </Switch>
+      </AppLayout>
+    );
+  }
+
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/entrar" component={Login} />
       <Route path="/cadastro" component={Cadastro} />
-      <Route path="/app">
-        <AppLayout>
-          <Switch>
-            <Route path="/app" component={Dashboard} />
-            <Route path="/app/agendamentos" component={Agendamentos} />
-            <Route path="/app/pacientes" component={Pacientes} />
-            <Route path="/app/prontuarios" component={Prontuarios} />
-            <Route path="/app/financeiro" component={Financeiro} />
-            <Route path="/app/relatorios" component={Relatorios} />
-            <Route path="/app/configuracoes" component={Configuracoes} />
-            <Route component={NotFound} />
-          </Switch>
-        </AppLayout>
-      </Route>
       <Route component={NotFound} />
     </Switch>
   );
