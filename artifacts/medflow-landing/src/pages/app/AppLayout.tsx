@@ -1,0 +1,227 @@
+import { useState } from "react";
+import { ReactNode } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Link, useLocation } from "wouter";
+import {
+  LayoutDashboard,
+  CalendarCheck,
+  Users,
+  FileText,
+  CreditCard,
+  BarChart3,
+  Settings,
+  Activity,
+  Bell,
+  Search,
+  Menu,
+  X,
+  ChevronDown,
+  LogOut,
+  User,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const navItems = [
+  { label: "Dashboard", href: "/app", icon: LayoutDashboard },
+  { label: "Agendamentos", href: "/app/agendamentos", icon: CalendarCheck },
+  { label: "Pacientes", href: "/app/pacientes", icon: Users },
+  { label: "Prontuários", href: "/app/prontuarios", icon: FileText },
+  { label: "Financeiro", href: "/app/financeiro", icon: CreditCard },
+  { label: "Relatórios", href: "/app/relatorios", icon: BarChart3 },
+];
+
+const pageTitles: Record<string, string> = {
+  "/app": "Dashboard",
+  "/app/agendamentos": "Agendamentos",
+  "/app/pacientes": "Pacientes",
+  "/app/prontuarios": "Prontuários",
+  "/app/financeiro": "Financeiro",
+  "/app/relatorios": "Relatórios",
+  "/app/configuracoes": "Configurações",
+};
+
+interface AppLayoutProps {
+  children: ReactNode;
+}
+
+export default function AppLayout({ children }: AppLayoutProps) {
+  const [location, setLocation] = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const pageTitle = pageTitles[location] ?? "MedFlow";
+
+  const handleLogout = () => {
+    localStorage.removeItem("medflow_user");
+    setLocation("/");
+  };
+
+  const SidebarContent = () => (
+    <div className="flex flex-col h-full">
+      <div className="px-6 py-6 border-b border-border/50">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-md">
+            <Activity className="w-5 h-5 text-primary-foreground" />
+          </div>
+          <span className="font-bold text-xl tracking-tight">MedFlow</span>
+        </Link>
+      </div>
+
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        {navItems.map((item) => {
+          const isActive = location === item.href || (item.href !== "/app" && location.startsWith(item.href));
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                isActive
+                  ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+              }`}
+              data-testid={`nav-${item.label.toLowerCase()}`}
+            >
+              <item.icon className="w-5 h-5 shrink-0" />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="px-4 py-4 border-t border-border/50">
+        <Link
+          href="/app/configuracoes"
+          onClick={() => setSidebarOpen(false)}
+          className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+            location === "/app/configuracoes"
+              ? "bg-primary text-primary-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          }`}
+          data-testid="nav-configuracoes"
+        >
+          <Settings className="w-5 h-5 shrink-0" />
+          Configurações
+        </Link>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-muted/30 flex">
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-background border-r border-border fixed h-full z-20">
+        <SidebarContent />
+      </aside>
+
+      {/* Mobile Sidebar */}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-30 md:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="fixed left-0 top-0 h-full w-72 bg-background border-r border-border z-40 md:hidden"
+            >
+              <div className="absolute top-4 right-4">
+                <button
+                  onClick={() => setSidebarOpen(false)}
+                  className="p-2 rounded-lg hover:bg-muted"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content */}
+      <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
+        {/* Top Header */}
+        <header className="bg-background border-b border-border px-4 md:px-8 h-16 flex items-center justify-between sticky top-0 z-10">
+          <div className="flex items-center gap-4">
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground"
+              onClick={() => setSidebarOpen(true)}
+              data-testid="button-mobile-sidebar"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <h1 className="text-lg font-semibold text-foreground">{pageTitle}</h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-2 bg-muted/60 rounded-xl px-3 py-2 w-56">
+              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+              <input
+                placeholder="Buscar..."
+                className="bg-transparent text-sm outline-none w-full text-foreground placeholder:text-muted-foreground"
+                data-testid="input-search"
+              />
+            </div>
+
+            <button className="relative p-2 rounded-xl hover:bg-muted text-muted-foreground" data-testid="button-notifications">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
+            </button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-muted transition-colors" data-testid="button-user-menu">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
+                    CE
+                  </div>
+                  <div className="hidden md:block text-left">
+                    <p className="text-sm font-medium leading-tight">Clínica Exemplo</p>
+                    <p className="text-xs text-muted-foreground">admin@clinica.com</p>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem onClick={() => setLocation("/app/configuracoes")}>
+                  <User className="w-4 h-4 mr-2" />
+                  Meu Perfil
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive" data-testid="button-logout">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="flex-1 p-4 md:p-8">
+          <motion.div
+            key={location}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
+          >
+            {children}
+          </motion.div>
+        </main>
+      </div>
+    </div>
+  );
+}

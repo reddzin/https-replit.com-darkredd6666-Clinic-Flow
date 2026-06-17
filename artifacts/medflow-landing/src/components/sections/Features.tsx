@@ -36,7 +36,7 @@ const features = [
 
 export function Features() {
   return (
-    <section id="funcionalidades" className="py-24 bg-card relative overflow-hidden">
+    <section id="funcionalidades" className="py-24 bg-card relative overflow-hidden scroll-mt-20">
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">Tudo o que sua clínica precisa</h2>

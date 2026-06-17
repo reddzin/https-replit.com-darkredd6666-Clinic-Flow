@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLocation } from "wouter";
 
 const plans = [
   {
@@ -12,10 +13,10 @@ const plans = [
       "Agendamento Online",
       "Prontuário Eletrônico Básico",
       "Lembretes por E-mail",
-      "Suporte em horário comercial"
+      "Suporte em horário comercial",
     ],
     popular: false,
-    buttonVariant: "outline" as const
+    buttonVariant: "outline" as const,
   },
   {
     name: "Professional",
@@ -27,10 +28,10 @@ const plans = [
       "Faturamento TISS/TUSS",
       "Telemedicina Integrada",
       "Lembretes por WhatsApp",
-      "Dashboard de BI"
+      "Dashboard de BI",
     ],
     popular: true,
-    buttonVariant: "default" as const
+    buttonVariant: "default" as const,
   },
   {
     name: "Enterprise",
@@ -42,19 +43,23 @@ const plans = [
       "Múltiplas Unidades",
       "API para Integrações",
       "Gerente de Conta Dedicado",
-      "Implantação Presencial"
+      "Implantação Presencial",
     ],
     popular: false,
-    buttonVariant: "outline" as const
-  }
+    buttonVariant: "outline" as const,
+  },
 ];
 
 export function Pricing() {
+  const [, setLocation] = useLocation();
+
   return (
-    <section id="precos" className="py-24 bg-background">
+    <section id="precos" className="py-24 bg-background scroll-mt-20">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">Planos que acompanham seu crescimento</h2>
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Planos que acompanham seu crescimento
+          </h2>
           <p className="text-lg text-muted-foreground">
             Sem taxas de adesão, cancele quando quiser. Escolha o plano ideal para a sua estrutura.
           </p>
@@ -68,20 +73,26 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative p-8 rounded-3xl border flex flex-col h-full bg-card ${plan.popular ? 'border-primary shadow-xl shadow-primary/10' : 'border-border shadow-sm'}`}
+              className={`relative p-8 rounded-3xl border flex flex-col h-full bg-card ${
+                plan.popular
+                  ? "border-primary shadow-xl shadow-primary/10"
+                  : "border-border shadow-sm"
+              }`}
             >
               {plan.popular && (
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium tracking-wide">
                   Mais Escolhido
                 </div>
               )}
-              
+
               <div className="mb-8">
                 <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                 <p className="text-muted-foreground text-sm min-h-[40px]">{plan.description}</p>
                 <div className="mt-6 flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                  {plan.name !== "Enterprise" && <span className="text-muted-foreground">/mês</span>}
+                  {plan.name !== "Enterprise" && (
+                    <span className="text-muted-foreground">/mês</span>
+                  )}
                 </div>
               </div>
 
@@ -97,7 +108,12 @@ export function Pricing() {
               </div>
 
               <div className="mt-8">
-                <Button variant={plan.buttonVariant} className="w-full h-12 rounded-xl text-base" data-testid={`button-plan-${plan.name.toLowerCase()}`}>
+                <Button
+                  variant={plan.buttonVariant}
+                  className="w-full h-12 rounded-xl text-base"
+                  onClick={() => setLocation(plan.name === "Enterprise" ? "/contato" : "/cadastro")}
+                  data-testid={`button-plan-${plan.name.toLowerCase()}`}
+                >
                   {plan.name === "Enterprise" ? "Falar com Vendas" : "Começar Teste Grátis"}
                 </Button>
               </div>

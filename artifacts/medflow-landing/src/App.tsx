@@ -4,6 +4,16 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import Login from "@/pages/Login";
+import Cadastro from "@/pages/Cadastro";
+import AppLayout from "@/pages/app/AppLayout";
+import Dashboard from "@/pages/app/Dashboard";
+import Agendamentos from "@/pages/app/Agendamentos";
+import Pacientes from "@/pages/app/Pacientes";
+import Prontuarios from "@/pages/app/Prontuarios";
+import Financeiro from "@/pages/app/Financeiro";
+import Relatorios from "@/pages/app/Relatorios";
+import Configuracoes from "@/pages/app/Configuracoes";
 
 const queryClient = new QueryClient();
 
@@ -11,6 +21,22 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/entrar" component={Login} />
+      <Route path="/cadastro" component={Cadastro} />
+      <Route path="/app">
+        <AppLayout>
+          <Switch>
+            <Route path="/app" component={Dashboard} />
+            <Route path="/app/agendamentos" component={Agendamentos} />
+            <Route path="/app/pacientes" component={Pacientes} />
+            <Route path="/app/prontuarios" component={Prontuarios} />
+            <Route path="/app/financeiro" component={Financeiro} />
+            <Route path="/app/relatorios" component={Relatorios} />
+            <Route path="/app/configuracoes" component={Configuracoes} />
+            <Route component={NotFound} />
+          </Switch>
+        </AppLayout>
+      </Route>
       <Route component={NotFound} />
     </Switch>
   );
