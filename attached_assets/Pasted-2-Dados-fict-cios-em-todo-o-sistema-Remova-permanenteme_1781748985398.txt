@@ -1,0 +1,16 @@
+2. Dados fictícios em todo o sistema
+
+Remova permanentemente todos os dados de exemplo: "Dr. Silva", "Ana Paula Mendes", "Roberto Alves", "Mariana Costa", "Carlos Ferreira", "Juliana Ramos", "Pedro Souza", "Fernanda Lima", "Marcos Oliveira" e qualquer outro paciente, médico, prontuário, transação financeira ou atividade fictícia. O banco de dados começa absolutamente vazio para cada nova clínica. Toda tela sem dados reais exibe empty state com ícone, mensagem clara e botão de ação — por exemplo em Pacientes: "Nenhum paciente cadastrado ainda. Clique em Novo Paciente para começar."
+3. Gráficos sem profundidade 3D
+
+Os gráficos atuais em Dashboard ("Consultas esta semana") e em Financeiro ("Receita Mensal") são barras 2D planas. Refaça ambos com técnica 3D usando CSS transforms e perspective: cada barra precisa ter face frontal com gradiente de cor, face lateral direita mais escura usando transform skewY, e face superior usando transform skewX, criando ilusão real de profundidade. Adicione sombra suave projetada abaixo de cada barra e animação de crescimento ao carregar a tela.
+4. Lista de Espera e Avaliações ausentes da sidebar
+
+A sidebar atual mostra: Dashboard, Agendamentos, Pacientes, Prontuários, Financeiro, Relatórios. Adicione dois itens que desapareceram: "Lista de Espera" com ícone de pessoas em fila, e "Avaliações" com ícone de estrela — ambos entre Agendamentos e Pacientes. Lista de Espera deve seguir bloqueio por plano: Essencial vê overlay de upgrade, Pro e Supreme têm acesso completo.
+5. Prontuários sem controle de privacidade
+
+A tela de Prontuários expõe nome completo do paciente, médico responsável, especialidade e data diretamente na listagem sem nenhuma camada de proteção. Adicione confirmação ou clique adicional antes de exibir qualquer dado clínico sensível, e garanta que esses dados nunca aparecem em nenhuma exportação pública ou link compartilhável.
+6. Padronizar cabeçalho em todas as telas internas
+
+O cabeçalho com busca, sininho de notificação e avatar do usuário está correto e deve ser mantido idêntico em todas as telas internas — Dashboard, Agendamentos, Pacientes, Prontuários, Financeiro, Relatórios, Lista de Espera e Avaliações. Verifique que está consistente em todas.
+Não altere paleta de cores, não altere estrutura da sidebar além da adição pedida, não altere nenhuma outra funcionalidade que já está correta.

@@ -9,6 +9,8 @@ import Cadastro from "@/pages/Cadastro";
 import AppLayout from "@/pages/app/AppLayout";
 import Dashboard from "@/pages/app/Dashboard";
 import Agendamentos from "@/pages/app/Agendamentos";
+import ListaDeEspera from "@/pages/app/ListaDeEspera";
+import Avaliacoes from "@/pages/app/Avaliacoes";
 import Pacientes from "@/pages/app/Pacientes";
 import Prontuarios from "@/pages/app/Prontuarios";
 import Financeiro from "@/pages/app/Financeiro";
@@ -26,6 +28,8 @@ function Router() {
         <Switch>
           <Route path="/app" component={Dashboard} />
           <Route path="/app/agendamentos" component={Agendamentos} />
+          <Route path="/app/lista-de-espera" component={ListaDeEspera} />
+          <Route path="/app/avaliacoes" component={Avaliacoes} />
           <Route path="/app/pacientes" component={Pacientes} />
           <Route path="/app/prontuarios" component={Prontuarios} />
           <Route path="/app/financeiro" component={Financeiro} />

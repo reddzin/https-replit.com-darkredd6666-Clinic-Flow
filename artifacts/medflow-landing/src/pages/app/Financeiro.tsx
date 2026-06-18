@@ -1,61 +1,129 @@
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import {
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  AlertCircle,
-  FileText,
-  Download,
-  ArrowUpRight,
-} from "lucide-react";
+import { DollarSign, TrendingUp, TrendingDown, AlertCircle, FileText, Download } from "lucide-react";
 
 const kpis = [
-  { label: "Receita Bruta", value: "R$ 48.320", change: "+8,4%", up: true, icon: DollarSign, color: "bg-emerald-50 text-emerald-600" },
-  { label: "Receita Líquida", value: "R$ 41.072", change: "+6,1%", up: true, icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
-  { label: "Inadimplência", value: "R$ 2.140", change: "-12%", up: false, icon: TrendingDown, color: "bg-amber-50 text-amber-600" },
-  { label: "Guias Pendentes", value: "R$ 5.108", change: "+3 guias", up: false, icon: AlertCircle, color: "bg-rose-50 text-rose-600" },
+  { label: "Receita Bruta", value: "R$ 0", change: "Nenhuma entrada", icon: DollarSign, color: "bg-emerald-50 text-emerald-600" },
+  { label: "Receita Líquida", value: "R$ 0", change: "Nenhuma entrada", icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
+  { label: "Inadimplência", value: "R$ 0", change: "Sem pendências", icon: TrendingDown, color: "bg-amber-50 text-amber-600" },
+  { label: "Guias Pendentes", value: "R$ 0", change: "Nenhuma guia", icon: AlertCircle, color: "bg-rose-50 text-rose-600" },
 ];
 
-const monthlyData = [
-  { month: "Jan", value: 38200 },
-  { month: "Fev", value: 41500 },
-  { month: "Mar", value: 39800 },
-  { month: "Abr", value: 44100 },
-  { month: "Mai", value: 45600 },
-  { month: "Jun", value: 48320 },
-];
-
-const transactions = [
-  { date: "17/06/2026", patient: "Ana Paula Mendes", procedure: "Consulta Cardiologista", value: "R$ 350,00", method: "Bradesco Saúde", status: "Pago" },
-  { date: "17/06/2026", patient: "Pedro Souza", procedure: "Consulta Neurologista", value: "R$ 420,00", method: "Particular", status: "Pago" },
-  { date: "16/06/2026", patient: "Mariana Costa", procedure: "Consulta Dermatologista", value: "R$ 280,00", method: "Unimed", status: "Pendente" },
-  { date: "15/06/2026", patient: "Fernanda Lima", procedure: "Consulta + Exames", value: "R$ 680,00", method: "Bradesco Saúde", status: "Pago" },
-  { date: "15/06/2026", patient: "Carlos Ferreira", procedure: "Consulta Ortopedia", value: "R$ 390,00", method: "SulAmérica", status: "Cancelado" },
-  { date: "14/06/2026", patient: "Juliana Ramos", procedure: "Consulta Ginecologista", value: "R$ 310,00", method: "Amil", status: "Pago" },
-  { date: "14/06/2026", patient: "Roberto Alves", procedure: "Retorno Clínica Geral", value: "R$ 180,00", method: "Particular", status: "Pendente" },
-  { date: "13/06/2026", patient: "Marcos Oliveira", procedure: "Consulta Oftalmologista", value: "R$ 260,00", method: "Unimed", status: "Pago" },
-];
-
+const monthLabels = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"];
+const monthData = [0, 0, 0, 0, 0, 0];
 const periods = ["Este mês", "Último trimestre", "Este ano"];
 
-const maxVal = Math.max(...monthlyData.map(d => d.value));
+// 3D Bar component
+function Bar3D({
+  value,
+  label,
+  maxVal,
+  isActive = false,
+  delay = 0,
+}: {
+  value: number;
+  label: string;
+  maxVal: number;
+  isActive?: boolean;
+  delay?: number;
+}) {
+  const BAR_MAX = 160;
+  const D = 10;
+  const barH = maxVal > 0 ? Math.max((value / maxVal) * BAR_MAX, 4) : 4;
 
-function StatusBadge({ status }: { status: string }) {
-  const map: Record<string, string> = {
-    Pago: "bg-emerald-50 text-emerald-700",
-    Pendente: "bg-amber-50 text-amber-700",
-    Cancelado: "bg-red-50 text-red-700",
-  };
+  const frontGrad = isActive
+    ? "linear-gradient(to top, #0f3460, #1d4ed8)"
+    : "linear-gradient(to top, #1e3a8a, #2563eb)";
+  const sideColor = isActive ? "#091d3a" : "#172554";
+  const topColor = isActive ? "#3b82f6" : "#60a5fa";
+
   return (
-    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${map[status] ?? map["Pendente"]}`}>
-      {status}
-    </span>
+    <div className="flex-1 flex flex-col items-center gap-2 min-w-0">
+      <span className="text-xs font-bold text-foreground">
+        {value > 0 ? `R$${(value / 1000).toFixed(0)}k` : "—"}
+      </span>
+      <div
+        style={{
+          height: BAR_MAX + D + 8,
+          display: "flex",
+          alignItems: "flex-end",
+          position: "relative",
+        }}
+      >
+        <motion.div
+          initial={{ scaleY: 0 }}
+          animate={{ scaleY: 1 }}
+          transition={{ duration: 0.65, ease: "easeOut", delay }}
+          style={{
+            transformOrigin: "bottom",
+            position: "relative",
+            width: 44,
+            height: barH,
+            marginBottom: 4,
+          }}
+        >
+          {/* Front face */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              background: frontGrad,
+              borderRadius: "3px 3px 0 0",
+              zIndex: 1,
+            }}
+          />
+          {/* Right face */}
+          <div
+            style={{
+              position: "absolute",
+              top: D * 0.5,
+              left: 44,
+              width: D,
+              height: `calc(100% - ${D * 0.5}px)`,
+              background: sideColor,
+              transform: "skewY(-45deg)",
+              transformOrigin: "top left",
+              zIndex: 0,
+            }}
+          />
+          {/* Top face */}
+          <div
+            style={{
+              position: "absolute",
+              top: -(D * 0.5),
+              left: D * 0.5,
+              width: 44,
+              height: D,
+              background: topColor,
+              transform: "skewX(-45deg)",
+              transformOrigin: "bottom left",
+              zIndex: 2,
+            }}
+          />
+        </motion.div>
+        {/* Shadow */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            width: 44 + D,
+            height: 5,
+            background: "rgba(0,0,0,0.10)",
+            filter: "blur(4px)",
+            borderRadius: "50%",
+          }}
+        />
+      </div>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
   );
 }
 
 export default function Financeiro() {
   const [period, setPeriod] = useState("Este mês");
+  const maxVal = 1;
 
   return (
     <div className="space-y-6">
@@ -67,7 +135,9 @@ export default function Financeiro() {
               key={p}
               onClick={() => setPeriod(p)}
               className={`px-4 py-1.5 text-sm font-medium rounded-lg transition-all ${
-                period === p ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                period === p
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               data-testid={`tab-period-${p.toLowerCase().replace(/ /g, "-")}`}
             >
@@ -88,80 +158,56 @@ export default function Financeiro() {
               <div className={`w-10 h-10 rounded-xl ${kpi.color} flex items-center justify-center`}>
                 <kpi.icon className="w-5 h-5" />
               </div>
-              <span className={`flex items-center gap-1 text-xs font-medium ${kpi.up ? "text-emerald-600" : "text-amber-600"}`}>
-                <ArrowUpRight className="w-3.5 h-3.5" />
-                {kpi.change}
-              </span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
             <p className="text-sm text-muted-foreground mt-1">{kpi.label}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{kpi.change}</p>
           </div>
         ))}
       </div>
 
-      {/* Revenue Chart */}
+      {/* 3D Revenue Chart */}
       <div className="bg-background rounded-2xl border border-border p-6 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="font-semibold text-foreground">Receita Mensal</h3>
             <p className="text-sm text-muted-foreground">Últimos 6 meses</p>
           </div>
-          <span className="text-sm font-semibold text-emerald-600 flex items-center gap-1">
-            <TrendingUp className="w-4 h-4" /> +26,5% no período
-          </span>
+          <span className="text-sm text-muted-foreground">Sem dados ainda</span>
         </div>
-        <div className="flex items-end gap-4 h-48">
-          {monthlyData.map((d, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-2">
-              <span className="text-xs font-semibold text-foreground">
-                R$ {(d.value / 1000).toFixed(1)}k
-              </span>
-              <div
-                className={`w-full rounded-t-lg ${i === monthlyData.length - 1 ? "bg-primary" : "bg-primary/30"}`}
-                style={{ height: `${(d.value / maxVal) * 180}px` }}
-              />
-              <span className="text-xs text-muted-foreground">{d.month}</span>
-            </div>
+        <div className="flex items-end gap-4" style={{ paddingLeft: 4, paddingRight: 4 }}>
+          {monthData.map((val, i) => (
+            <Bar3D
+              key={i}
+              value={val}
+              label={monthLabels[i]}
+              maxVal={maxVal}
+              isActive={i === monthData.length - 1}
+              delay={i * 0.08}
+            />
           ))}
         </div>
       </div>
 
-      {/* Transactions Table */}
+      {/* Empty Transactions */}
       <div className="bg-background rounded-2xl border border-border shadow-sm overflow-hidden">
         <div className="px-6 py-5 border-b border-border flex items-center justify-between">
           <div>
             <h3 className="font-semibold text-foreground">Lançamentos</h3>
-            <p className="text-sm text-muted-foreground">{transactions.length} transações encontradas</p>
+            <p className="text-sm text-muted-foreground">0 transações</p>
           </div>
           <Button size="sm" variant="outline" data-testid="button-emitir-guia">
             <FileText className="w-4 h-4 mr-2" /> Emitir Guia
           </Button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-border bg-muted/30">
-                <th className="text-left px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Data</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Paciente</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden lg:table-cell">Procedimento</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide hidden md:table-cell">Pagamento</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Valor</th>
-                <th className="text-left px-6 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {transactions.map((t, i) => (
-                <tr key={i} className="border-b border-border/50 hover:bg-muted/20 transition-colors" data-testid={`row-transaction-${i}`}>
-                  <td className="px-6 py-4 text-sm text-muted-foreground">{t.date}</td>
-                  <td className="px-6 py-4 text-sm font-medium text-foreground">{t.patient}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground hidden lg:table-cell">{t.procedure}</td>
-                  <td className="px-6 py-4 text-sm text-muted-foreground hidden md:table-cell">{t.method}</td>
-                  <td className="px-6 py-4 text-sm font-semibold text-foreground">{t.value}</td>
-                  <td className="px-6 py-4"><StatusBadge status={t.status} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-4">
+            <DollarSign className="w-7 h-7 text-muted-foreground/50" />
+          </div>
+          <h3 className="font-semibold text-foreground mb-2">Nenhum lançamento registrado</h3>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            As transações financeiras aparecerão aqui assim que houver movimentações na clínica.
+          </p>
         </div>
       </div>
     </div>

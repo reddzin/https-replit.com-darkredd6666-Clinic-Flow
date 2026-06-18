@@ -9,29 +9,10 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, ChevronLeft, ChevronRight, Clock, User } from "lucide-react";
+import { Plus, ChevronLeft, ChevronRight, CalendarCheck } from "lucide-react";
 
 const hours = Array.from({ length: 11 }, (_, i) => `${String(i + 8).padStart(2, "0")}:00`);
-
 const weekDays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
-
-const mockAppointments: Record<string, { name: string; specialty: string; color: string; duration: number }[]> = {
-  "08:00-Seg": [{ name: "Ana Paula Mendes", specialty: "Cardiologia", color: "bg-blue-100 text-blue-800 border-blue-200", duration: 1 }],
-  "09:00-Ter": [{ name: "Roberto Alves", specialty: "Clínica Geral", color: "bg-emerald-100 text-emerald-800 border-emerald-200", duration: 1 }],
-  "10:00-Qua": [{ name: "Mariana Costa", specialty: "Dermatologia", color: "bg-violet-100 text-violet-800 border-violet-200", duration: 1 }],
-  "11:00-Qui": [{ name: "Carlos Ferreira", specialty: "Ortopedia", color: "bg-amber-100 text-amber-800 border-amber-200", duration: 1 }],
-  "14:00-Sex": [{ name: "Juliana Ramos", specialty: "Ginecologia", color: "bg-rose-100 text-rose-800 border-rose-200", duration: 1 }],
-  "09:00-Seg": [{ name: "Pedro Souza", specialty: "Neurologia", color: "bg-cyan-100 text-cyan-800 border-cyan-200", duration: 1 }],
-  "15:00-Seg": [{ name: "Fernanda Lima", specialty: "Endocrinologia", color: "bg-orange-100 text-orange-800 border-orange-200", duration: 1 }],
-  "10:00-Qua-2": [{ name: "Marcos Oliveira", specialty: "Oftalmologia", color: "bg-indigo-100 text-indigo-800 border-indigo-200", duration: 1 }],
-};
-
-const todayApts = [
-  { name: "Ana Paula Mendes", specialty: "Cardiologia", time: "08:00", status: "Confirmado" },
-  { name: "Pedro Souza", specialty: "Neurologia", time: "09:00", status: "Aguardando" },
-  { name: "Fernanda Lima", specialty: "Endocrinologia", time: "15:00", status: "Confirmado" },
-];
-
 const filters = ["Todos", "Confirmado", "Aguardando", "Cancelado"];
 
 export default function Agendamentos() {
@@ -49,7 +30,9 @@ export default function Agendamentos() {
               key={v}
               onClick={() => setView(v)}
               className={`px-4 py-1.5 text-sm font-medium rounded-lg capitalize transition-all ${
-                view === v ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                view === v
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               data-testid={`tab-view-${v}`}
             >
@@ -60,9 +43,15 @@ export default function Agendamentos() {
 
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
-            <button className="p-2 rounded-lg hover:bg-muted" data-testid="button-prev-week"><ChevronLeft className="w-4 h-4" /></button>
-            <span className="text-sm font-medium px-2">16 – 22 Jun 2026</span>
-            <button className="p-2 rounded-lg hover:bg-muted" data-testid="button-next-week"><ChevronRight className="w-4 h-4" /></button>
+            <button className="p-2 rounded-lg hover:bg-muted" data-testid="button-prev-week">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="text-sm font-medium px-2">
+              {new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })}
+            </span>
+            <button className="p-2 rounded-lg hover:bg-muted" data-testid="button-next-week">
+              <ChevronRight className="w-4 h-4" />
+            </button>
           </div>
           <Button onClick={() => setDialogOpen(true)} data-testid="button-nova-consulta">
             <Plus className="w-4 h-4 mr-2" /> Nova Consulta
@@ -94,7 +83,10 @@ export default function Agendamentos() {
           <div className="grid grid-cols-8 border-b border-border">
             <div className="px-4 py-3 text-xs text-muted-foreground" />
             {weekDays.map((day) => (
-              <div key={day} className="px-2 py-3 text-center text-xs font-medium text-muted-foreground border-l border-border">
+              <div
+                key={day}
+                className="px-2 py-3 text-center text-xs font-medium text-muted-foreground border-l border-border"
+              >
                 {day.slice(0, 3)}
               </div>
             ))}
@@ -103,52 +95,38 @@ export default function Agendamentos() {
             {hours.map((hour) => (
               <div key={hour} className="grid grid-cols-8 border-b border-border/50 min-h-[56px]">
                 <div className="px-4 py-2 text-xs text-muted-foreground flex items-start pt-2">{hour}</div>
-                {weekDays.map((day, di) => {
-                  const key = `${hour}-${day.slice(0, 3)}`;
-                  const apts = mockAppointments[key] || [];
-                  return (
-                    <div key={di} className="border-l border-border/50 p-1 relative">
-                      {apts.map((apt, ai) => (
-                        <div key={ai} className={`text-xs p-1.5 rounded-lg border ${apt.color} leading-tight cursor-pointer`}>
-                          <p className="font-medium truncate">{apt.name.split(" ")[0]}</p>
-                          <p className="opacity-70 truncate">{apt.specialty}</p>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
+                {weekDays.map((_, di) => (
+                  <div key={di} className="border-l border-border/50 p-1" />
+                ))}
               </div>
             ))}
+          </div>
+          {/* Empty State overlay */}
+          <div className="flex flex-col items-center justify-center py-12 text-center border-t border-border">
+            <CalendarCheck className="w-10 h-10 text-muted-foreground/30 mb-3" />
+            <p className="text-sm font-medium text-muted-foreground">Nenhuma consulta agendada</p>
+            <p className="text-xs text-muted-foreground mt-1 mb-4">
+              Clique em "Nova Consulta" para adicionar o primeiro agendamento.
+            </p>
+            <Button size="sm" onClick={() => setDialogOpen(true)} data-testid="button-agendar-empty">
+              <Plus className="w-4 h-4 mr-2" /> Nova Consulta
+            </Button>
           </div>
         </div>
 
         {/* Today Sidebar */}
         <div className="bg-background rounded-2xl border border-border shadow-sm p-5">
           <h3 className="font-semibold text-foreground mb-4">Hoje</h3>
-          <div className="space-y-3">
-            {todayApts.map((apt, i) => (
-              <div key={i} className="p-3 rounded-xl border border-border hover:border-primary/30 transition-colors cursor-pointer">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
-                    {apt.name[0]}
-                  </div>
-                  <span className="text-sm font-medium text-foreground truncate">{apt.name}</span>
-                </div>
-                <p className="text-xs text-muted-foreground">{apt.specialty}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="w-3 h-3" /> {apt.time}
-                  </span>
-                  <span className={`text-xs font-medium ${
-                    apt.status === "Confirmado" ? "text-emerald-600" : "text-amber-600"
-                  }`}>
-                    {apt.status}
-                  </span>
-                </div>
-              </div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-10 text-center">
+            <CalendarCheck className="w-8 h-8 text-muted-foreground/30 mb-3" />
+            <p className="text-xs text-muted-foreground">Sem consultas hoje.</p>
           </div>
-          <Button variant="outline" className="w-full mt-4 text-sm" onClick={() => setDialogOpen(true)} data-testid="button-add-sidebar">
+          <Button
+            variant="outline"
+            className="w-full mt-2 text-sm"
+            onClick={() => setDialogOpen(true)}
+            data-testid="button-add-sidebar"
+          >
             <Plus className="w-4 h-4 mr-2" /> Adicionar
           </Button>
         </div>
@@ -185,8 +163,12 @@ export default function Agendamentos() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} data-testid="button-cancelar">Cancelar</Button>
-            <Button onClick={() => setDialogOpen(false)} data-testid="button-confirmar-consulta">Agendar Consulta</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} data-testid="button-cancelar">
+              Cancelar
+            </Button>
+            <Button onClick={() => setDialogOpen(false)} data-testid="button-confirmar-consulta">
+              Agendar Consulta
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

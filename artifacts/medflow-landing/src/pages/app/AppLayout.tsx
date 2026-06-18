@@ -18,6 +18,8 @@ import {
   ChevronDown,
   LogOut,
   User,
+  UsersRound,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +33,8 @@ import {
 const navItems = [
   { label: "Dashboard", href: "/app", icon: LayoutDashboard },
   { label: "Agendamentos", href: "/app/agendamentos", icon: CalendarCheck },
+  { label: "Lista de Espera", href: "/app/lista-de-espera", icon: UsersRound },
+  { label: "Avaliações", href: "/app/avaliacoes", icon: Star },
   { label: "Pacientes", href: "/app/pacientes", icon: Users },
   { label: "Prontuários", href: "/app/prontuarios", icon: FileText },
   { label: "Financeiro", href: "/app/financeiro", icon: CreditCard },
@@ -40,6 +44,8 @@ const navItems = [
 const pageTitles: Record<string, string> = {
   "/app": "Dashboard",
   "/app/agendamentos": "Agendamentos",
+  "/app/lista-de-espera": "Lista de Espera",
+  "/app/avaliacoes": "Avaliações",
   "/app/pacientes": "Pacientes",
   "/app/prontuarios": "Prontuários",
   "/app/financeiro": "Financeiro",
@@ -75,7 +81,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = location === item.href || (item.href !== "/app" && location.startsWith(item.href));
+          const isActive =
+            location === item.href ||
+            (item.href !== "/app" && location.startsWith(item.href));
           return (
             <Link
               key={item.href}
@@ -86,7 +94,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                   ? "bg-primary text-primary-foreground shadow-sm shadow-primary/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
               }`}
-              data-testid={`nav-${item.label.toLowerCase()}`}
+              data-testid={`nav-${item.label.toLowerCase().replace(/ /g, "-")}`}
             >
               <item.icon className="w-5 h-5 shrink-0" />
               {item.label}
@@ -111,6 +119,73 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </Link>
       </div>
     </div>
+  );
+
+  const TopHeader = () => (
+    <header className="bg-background border-b border-border px-4 md:px-8 h-16 flex items-center justify-between sticky top-0 z-10">
+      <div className="flex items-center gap-4">
+        <button
+          className="md:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground"
+          onClick={() => setSidebarOpen(true)}
+          data-testid="button-mobile-sidebar"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <h1 className="text-lg font-semibold text-foreground">{pageTitle}</h1>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-2 bg-muted/60 rounded-xl px-3 py-2 w-56">
+          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
+          <input
+            placeholder="Buscar..."
+            className="bg-transparent text-sm outline-none w-full text-foreground placeholder:text-muted-foreground"
+            data-testid="input-search"
+          />
+        </div>
+
+        <button
+          className="relative p-2 rounded-xl hover:bg-muted text-muted-foreground"
+          data-testid="button-notifications"
+        >
+          <Bell className="w-5 h-5" />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
+        </button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-muted transition-colors"
+              data-testid="button-user-menu"
+            >
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
+                CE
+              </div>
+              <div className="hidden md:block text-left">
+                <p className="text-sm font-medium leading-tight">Clínica Exemplo</p>
+                <p className="text-xs text-muted-foreground">admin@clinica.com</p>
+              </div>
+              <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem onClick={() => setLocation("/app/configuracoes")}>
+              <User className="w-4 h-4 mr-2" />
+              Meu Perfil
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={handleLogout}
+              className="text-destructive focus:text-destructive"
+              data-testid="button-logout"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Sair
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
   );
 
   return (
@@ -154,63 +229,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
       {/* Main Content */}
       <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
-        {/* Top Header */}
-        <header className="bg-background border-b border-border px-4 md:px-8 h-16 flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-4">
-            <button
-              className="md:hidden p-2 rounded-lg hover:bg-muted text-muted-foreground"
-              onClick={() => setSidebarOpen(true)}
-              data-testid="button-mobile-sidebar"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <h1 className="text-lg font-semibold text-foreground">{pageTitle}</h1>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2 bg-muted/60 rounded-xl px-3 py-2 w-56">
-              <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-              <input
-                placeholder="Buscar..."
-                className="bg-transparent text-sm outline-none w-full text-foreground placeholder:text-muted-foreground"
-                data-testid="input-search"
-              />
-            </div>
-
-            <button className="relative p-2 rounded-xl hover:bg-muted text-muted-foreground" data-testid="button-notifications">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-destructive rounded-full" />
-            </button>
-
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-muted transition-colors" data-testid="button-user-menu">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
-                    CE
-                  </div>
-                  <div className="hidden md:block text-left">
-                    <p className="text-sm font-medium leading-tight">Clínica Exemplo</p>
-                    <p className="text-xs text-muted-foreground">admin@clinica.com</p>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem onClick={() => setLocation("/app/configuracoes")}>
-                  <User className="w-4 h-4 mr-2" />
-                  Meu Perfil
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive" data-testid="button-logout">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        </header>
-
-        {/* Page Content */}
+        <TopHeader />
         <main className="flex-1 p-4 md:p-8">
           <motion.div
             key={location}
