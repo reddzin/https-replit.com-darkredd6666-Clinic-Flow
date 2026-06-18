@@ -6,6 +6,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
 import Cadastro from "@/pages/Cadastro";
+import Agendar from "@/pages/Agendar";
 import AppLayout from "@/pages/app/AppLayout";
 import Dashboard from "@/pages/app/Dashboard";
 import Agendamentos from "@/pages/app/Agendamentos";
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/entrar" component={Login} />
       <Route path="/cadastro" component={Cadastro} />
+      <Route path="/agendar/:slug" component={Agendar} />
       <Route component={NotFound} />
     </Switch>
   );

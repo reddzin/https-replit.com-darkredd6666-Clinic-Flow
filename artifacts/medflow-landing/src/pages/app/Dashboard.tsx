@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
@@ -74,14 +74,17 @@ function BookingLinkCard() {
             <p className="font-semibold text-foreground mb-1.5" style={{ fontSize: 16 }}>
               Seu link de agendamento
             </p>
-            <div className="flex items-center bg-muted/70 border border-border rounded-lg px-3 py-2 w-full max-w-sm">
+            <Link
+              href={`/agendar/${CLINIC_SLUG}`}
+              className="flex items-center bg-muted/70 border border-border rounded-lg px-3 py-2 w-full max-w-sm hover:border-emerald-400 transition-colors group"
+            >
               <span
-                className="text-sm text-foreground truncate select-all"
+                className="text-sm text-foreground truncate group-hover:text-emerald-700 transition-colors"
                 style={{ fontFamily: "ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace" }}
               >
                 {BOOKING_LINK}
               </span>
-            </div>
+            </Link>
             <p className="text-xs text-muted-foreground mt-1.5">
               Compartilhe este link para seus pacientes agendarem consultas online.
             </p>
