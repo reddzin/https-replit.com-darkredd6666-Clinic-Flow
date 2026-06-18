@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Activity, ArrowLeft } from "lucide-react";
+import { generateSlug, saveClinicData } from "@/lib/clinic";
 
 const formSchema = z.object({
   clinica: z.string().min(2, "O nome da clínica é obrigatório"),
@@ -31,7 +32,8 @@ export default function Cadastro() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    localStorage.setItem("medflow_user", JSON.stringify({ email: values.email, token: "mock_token" }));
+    const slug = generateSlug(values.clinica);
+    saveClinicData({ email: values.email, token: "mock_token", clinicName: values.clinica, clinicSlug: slug });
     setLocation("/app");
   }
 

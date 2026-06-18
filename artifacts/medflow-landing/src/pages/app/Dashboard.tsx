@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
 import { motion } from "framer-motion";
+import { getClinicData } from "@/lib/clinic";
 import { Button } from "@/components/ui/button";
 import {
   CalendarCheck,
@@ -28,21 +29,22 @@ const kpis = [
 
 const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
-// Simulated clinic slug — would come from auth context in a real app
-const CLINIC_SLUG = "clinica-exemplo";
-const BOOKING_LINK = `medflow.com.br/${CLINIC_SLUG}`;
-const BOOKING_URL = `https://${BOOKING_LINK}`;
-
 function BookingLinkCard() {
   const [copied, setCopied] = useState(false);
 
+  // Read slug dynamically from localStorage — set during onboarding/cadastro
+  const { slug, link, url } = useMemo(() => {
+    const data = getClinicData();
+    const s = data?.clinicSlug ?? "minha-clinica";
+    return { slug: s, link: `medflow.com.br/${s}`, url: `https://medflow.com.br/${s}` };
+  }, []);
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(BOOKING_URL);
+      await navigator.clipboard.writeText(url);
     } catch {
-      // fallback for browsers without clipboard API
       const ta = document.createElement("textarea");
-      ta.value = BOOKING_URL;
+      ta.value = url;
       document.body.appendChild(ta);
       ta.select();
       document.execCommand("copy");
@@ -54,10 +56,13 @@ function BookingLinkCard() {
 
   const handleWhatsApp = () => {
     const message = encodeURIComponent(
-      `Olá! Agende sua consulta de forma rápida e fácil pelo nosso link:\n\n${BOOKING_URL}\n\nEscolha o horário que preferir diretamente pela plataforma. 😊`
+      `Olá! Agende sua consulta de forma rápida e fácil pelo nosso link:\n\n${url}\n\nEscolha o horário que preferir diretamente pela plataforma. 😊`
     );
     window.open(`https://wa.me/?text=${message}`, "_blank", "noopener");
   };
+
+  const CLINIC_SLUG = slug;
+  const BOOKING_LINK = link;
 
   return (
     <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">

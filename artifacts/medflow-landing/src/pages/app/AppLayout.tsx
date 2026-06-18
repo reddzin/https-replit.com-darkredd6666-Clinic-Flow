@@ -22,6 +22,7 @@ import {
   Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { getClinicData } from "@/lib/clinic";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,6 +54,19 @@ const pageTitles: Record<string, string> = {
   "/app/configuracoes": "Configurações",
 };
 
+// Read clinic info from localStorage once at mount
+function useClinic() {
+  const data = getClinicData();
+  const name = data?.clinicName ?? "Minha Clínica";
+  const email = data?.email ?? "";
+  const initials = name
+    .split(" ")
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  return { name, email, initials };
+}
+
 interface AppLayoutProps {
   children: ReactNode;
 }
@@ -60,6 +74,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const clinic = useClinic();
 
   const pageTitle = pageTitles[location] ?? "MedFlow";
 
@@ -159,11 +174,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
               data-testid="button-user-menu"
             >
               <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
-                CE
+                {clinic.initials}
               </div>
               <div className="hidden md:block text-left">
-                <p className="text-sm font-medium leading-tight">Clínica Exemplo</p>
-                <p className="text-xs text-muted-foreground">admin@clinica.com</p>
+                <p className="text-sm font-medium leading-tight">{clinic.name}</p>
+                <p className="text-xs text-muted-foreground">{clinic.email}</p>
               </div>
               <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
             </button>
