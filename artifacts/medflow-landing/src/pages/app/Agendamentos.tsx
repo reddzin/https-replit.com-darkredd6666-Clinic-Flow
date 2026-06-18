@@ -15,10 +15,14 @@ const hours = Array.from({ length: 11 }, (_, i) => `${String(i + 8).padStart(2, 
 const weekDays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const filters = ["Todos", "Confirmado", "Aguardando", "Cancelado"];
 
+// Replace with real data when available
+const appointments: unknown[] = [];
+
 export default function Agendamentos() {
   const [activeFilter, setActiveFilter] = useState("Todos");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [view, setView] = useState<"semana" | "dia">("semana");
+  const isEmpty = appointments.length === 0;
 
   return (
     <div className="space-y-6">
@@ -80,54 +84,65 @@ export default function Agendamentos() {
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
         {/* Calendar Grid */}
         <div className="xl:col-span-3 bg-background rounded-2xl border border-border shadow-sm overflow-hidden">
-          <div className="grid grid-cols-8 border-b border-border">
-            <div className="px-4 py-3 text-xs text-muted-foreground" />
-            {weekDays.map((day) => (
-              <div
-                key={day}
-                className="px-2 py-3 text-center text-xs font-medium text-muted-foreground border-l border-border"
-              >
-                {day.slice(0, 3)}
+          {isEmpty ? (
+            /* Full empty state — shown when no appointments exist */
+            <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <CalendarCheck className="w-8 h-8 text-muted-foreground/50" />
               </div>
-            ))}
-          </div>
-          <div className="overflow-y-auto max-h-[480px]">
-            {hours.map((hour) => (
-              <div key={hour} className="grid grid-cols-8 border-b border-border/50 min-h-[56px]">
-                <div className="px-4 py-2 text-xs text-muted-foreground flex items-start pt-2">{hour}</div>
-                {weekDays.map((_, di) => (
-                  <div key={di} className="border-l border-border/50 p-1" />
+              <h3 className="font-semibold text-foreground mb-2">Nenhum agendamento ainda</h3>
+              <p className="text-sm text-muted-foreground max-w-xs mb-6">
+                A grade de horários aparecerá aqui quando houver consultas cadastradas. Crie o primeiro agendamento para começar.
+              </p>
+              <Button onClick={() => setDialogOpen(true)} data-testid="button-agendar-empty">
+                <Plus className="w-4 h-4 mr-2" /> Nova Consulta
+              </Button>
+            </div>
+          ) : (
+            /* Calendar grid — only shown when there are appointments */
+            <>
+              <div className="grid grid-cols-8 border-b border-border">
+                <div className="px-4 py-3 text-xs text-muted-foreground" />
+                {weekDays.map((day) => (
+                  <div
+                    key={day}
+                    className="px-2 py-3 text-center text-xs font-medium text-muted-foreground border-l border-border"
+                  >
+                    {day.slice(0, 3)}
+                  </div>
                 ))}
               </div>
-            ))}
-          </div>
-          {/* Empty State overlay */}
-          <div className="flex flex-col items-center justify-center py-12 text-center border-t border-border">
-            <CalendarCheck className="w-10 h-10 text-muted-foreground/30 mb-3" />
-            <p className="text-sm font-medium text-muted-foreground">Nenhuma consulta agendada</p>
-            <p className="text-xs text-muted-foreground mt-1 mb-4">
-              Clique em "Nova Consulta" para adicionar o primeiro agendamento.
-            </p>
-            <Button size="sm" onClick={() => setDialogOpen(true)} data-testid="button-agendar-empty">
-              <Plus className="w-4 h-4 mr-2" /> Nova Consulta
-            </Button>
-          </div>
+              <div className="overflow-y-auto max-h-[520px]">
+                {hours.map((hour) => (
+                  <div key={hour} className="grid grid-cols-8 border-b border-border/50 min-h-[56px]">
+                    <div className="px-4 py-2 text-xs text-muted-foreground flex items-start pt-2">{hour}</div>
+                    {weekDays.map((_, di) => (
+                      <div key={di} className="border-l border-border/50 p-1" />
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Today Sidebar */}
-        <div className="bg-background rounded-2xl border border-border shadow-sm p-5">
+        <div className="bg-background rounded-2xl border border-border shadow-sm p-5 flex flex-col">
           <h3 className="font-semibold text-foreground mb-4">Hoje</h3>
-          <div className="flex flex-col items-center justify-center py-10 text-center">
+          <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
             <CalendarCheck className="w-8 h-8 text-muted-foreground/30 mb-3" />
-            <p className="text-xs text-muted-foreground">Sem consultas hoje.</p>
+            <p className="text-sm font-medium text-muted-foreground mb-1">Nenhum agendamento</p>
+            <p className="text-xs text-muted-foreground">
+              {new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}
+            </p>
           </div>
           <Button
             variant="outline"
-            className="w-full mt-2 text-sm"
+            className="w-full text-sm"
             onClick={() => setDialogOpen(true)}
             data-testid="button-add-sidebar"
           >
-            <Plus className="w-4 h-4 mr-2" /> Adicionar
+            <Plus className="w-4 h-4 mr-2" /> Nova Consulta
           </Button>
         </div>
       </div>
