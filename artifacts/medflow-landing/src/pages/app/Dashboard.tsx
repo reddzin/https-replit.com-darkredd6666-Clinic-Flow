@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,10 @@ import {
   BarChart3,
   ArrowUpRight,
   Clock,
+  Link2,
+  Copy,
+  Check,
+  MessageCircle,
 } from "lucide-react";
 
 const kpis = [
@@ -22,6 +27,102 @@ const kpis = [
 ];
 
 const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
+
+// Simulated clinic slug — would come from auth context in a real app
+const CLINIC_SLUG = "clinica-exemplo";
+const BOOKING_LINK = `medflow.com.br/${CLINIC_SLUG}`;
+const BOOKING_URL = `https://${BOOKING_LINK}`;
+
+function BookingLinkCard() {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(BOOKING_URL);
+    } catch {
+      // fallback for browsers without clipboard API
+      const ta = document.createElement("textarea");
+      ta.value = BOOKING_URL;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+    }
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleWhatsApp = () => {
+    const message = encodeURIComponent(
+      `Olá! Agende sua consulta de forma rápida e fácil pelo nosso link:\n\n${BOOKING_URL}\n\nEscolha o horário que preferir diretamente pela plataforma. 😊`
+    );
+    window.open(`https://wa.me/?text=${message}`, "_blank", "noopener");
+  };
+
+  return (
+    <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+      {/* Green accent strip */}
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-400 rounded-l-2xl" />
+
+      <div className="pl-3 flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* Icon + text */}
+        <div className="flex items-start gap-3 flex-1 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0 mt-0.5">
+            <Link2 className="w-5 h-5 text-emerald-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-foreground mb-1.5" style={{ fontSize: 16 }}>
+              Seu link de agendamento
+            </p>
+            <div className="flex items-center bg-muted/70 border border-border rounded-lg px-3 py-2 w-full max-w-sm">
+              <span
+                className="text-sm text-foreground truncate select-all"
+                style={{ fontFamily: "ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace" }}
+              >
+                {BOOKING_LINK}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">
+              Compartilhe este link para seus pacientes agendarem consultas online.
+            </p>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 shrink-0 sm:flex-col sm:items-stretch xl:flex-row">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleCopy}
+            className={`gap-2 transition-all ${copied ? "border-emerald-400 text-emerald-600" : ""}`}
+            data-testid="button-copiar-link"
+          >
+            {copied ? (
+              <>
+                <Check className="w-4 h-4" />
+                Copiado!
+              </>
+            ) : (
+              <>
+                <Copy className="w-4 h-4" />
+                Copiar link
+              </>
+            )}
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleWhatsApp}
+            className="gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white border-0"
+            data-testid="button-whatsapp"
+          >
+            <MessageCircle className="w-4 h-4" />
+            WhatsApp
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // 3D Bar component with CSS transforms
 function Bar3D({
@@ -147,6 +248,9 @@ export default function Dashboard() {
           })}
         </p>
       </div>
+
+      {/* Booking Link Card */}
+      <BookingLinkCard />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
