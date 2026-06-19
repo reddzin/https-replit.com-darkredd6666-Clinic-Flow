@@ -32,11 +32,12 @@ const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 function BookingLinkCard() {
   const [copied, setCopied] = useState(false);
 
-  // Read slug dynamically from localStorage — set during onboarding/cadastro
+  // Read slug dynamically from localStorage — set during onboarding
   const { slug, link, url } = useMemo(() => {
     const data = getClinicData();
     const s = data?.clinicSlug ?? "minha-clinica";
-    return { slug: s, link: `medflow.com.br/${s}`, url: `https://medflow.com.br/${s}` };
+    const origin = window.location.origin;
+    return { slug: s, link: `${origin}/agendar/${s}`, url: `${origin}/agendar/${s}` };
   }, []);
 
   const handleCopy = async () => {
@@ -62,7 +63,7 @@ function BookingLinkCard() {
   };
 
   const CLINIC_SLUG = slug;
-  const BOOKING_LINK = link;
+  const BOOKING_LINK = link.replace(/^https?:\/\/[^/]+\//, "").replace(/^\//, ""); // display-only short form
 
   return (
     <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
@@ -241,12 +242,13 @@ export default function Dashboard() {
   const [, setLocation] = useLocation();
   const weekData = [0, 0, 0, 0, 0, 0, 0];
   const maxVal = 1; // avoid division by zero; bars will show minimum height
+  const clinicName = useMemo(() => getClinicData()?.clinicName ?? "MedFlow", []);
 
   return (
     <div className="space-y-6">
       {/* Welcome */}
       <div>
-        <h2 className="text-2xl font-bold text-foreground">Bem-vindo ao MedFlow</h2>
+        <h2 className="text-2xl font-bold text-foreground">Bem-vindo, {clinicName}</h2>
         <p className="text-muted-foreground text-sm mt-0.5">
           {new Date().toLocaleDateString("pt-BR", {
             weekday: "long",

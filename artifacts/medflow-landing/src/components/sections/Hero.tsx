@@ -50,25 +50,16 @@ export function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex items-center justify-center"
           >
             <Button
               size="lg"
-              className="w-full sm:w-auto h-14 px-8 text-base shadow-lg shadow-primary/25 rounded-full"
+              className="h-14 px-10 text-base shadow-lg shadow-primary/25 rounded-full"
               onClick={() => setLocation("/cadastro")}
               data-testid="button-hero-start"
             >
               Começar Agora
               <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="w-full sm:w-auto h-14 px-8 text-base rounded-full bg-transparent border-primary/20 hover:bg-primary/5"
-              onClick={() => setLocation("/demo")}
-              data-testid="button-hero-demo"
-            >
-              Agendar Demonstração
             </Button>
           </motion.div>
 

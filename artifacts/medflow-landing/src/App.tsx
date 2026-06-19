@@ -29,14 +29,9 @@ const queryClient = new QueryClient();
 function ProtectedApp() {
   const session = getSession();
 
-  // Not logged in at all → go to /entrar
-  if (!session?.token || session.token === "pending_payment") {
+  // No session at all → login
+  if (!session?.email || !session?.token) {
     return <Redirect to="/entrar" />;
-  }
-
-  // Payment not confirmed → go to payment page
-  if (!session.paymentConfirmed) {
-    return <Redirect to="/cadastro/pagamento" />;
   }
 
   // Onboarding not finished → go to /app/onboarding (cannot be skipped)

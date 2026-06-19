@@ -74,9 +74,8 @@ export default function Onboarding() {
   const [, setLocation] = useLocation();
   const session = getSession();
 
-  // Guards: must have gone through payment
-  if (!session?.token) { setLocation("/cadastro"); return null; }
-  if (!session?.paymentConfirmed) { setLocation("/cadastro/pagamento"); return null; }
+  // Guards: must be authenticated
+  if (!session?.email || !session?.token) { setLocation("/cadastro"); return null; }
   if (session.onboarding_completed) { setLocation("/app"); return null; }
 
   const [step, setStep] = useState(0); // 0-4

@@ -204,9 +204,21 @@ export default function AppLayout({ children }: AppLayoutProps) {
   );
 
   return (
-    <div className="min-h-screen bg-muted/30 flex">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-background border-r border-border fixed h-full z-20">
+    <div className="min-h-screen bg-muted/30 flex overflow-x-hidden">
+      {/* Desktop Sidebar — fixed, always fully visible, 240px wide */}
+      <aside
+        className="hidden md:flex flex-col bg-background border-r border-border"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: 240,
+          height: "100vh",
+          zIndex: 20,
+          overflowY: "auto",
+          overflowX: "hidden",
+        }}
+      >
         <SidebarContent />
       </aside>
 
@@ -222,11 +234,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
               onClick={() => setSidebarOpen(false)}
             />
             <motion.aside
-              initial={{ x: -280 }}
+              initial={{ x: -260 }}
               animate={{ x: 0 }}
-              exit={{ x: -280 }}
+              exit={{ x: -260 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="fixed left-0 top-0 h-full w-72 bg-background border-r border-border z-40 md:hidden"
+              style={{ width: 240, zIndex: 40 }}
+              className="fixed left-0 top-0 h-full bg-background border-r border-border md:hidden"
             >
               <div className="absolute top-4 right-4">
                 <button
@@ -242,19 +255,25 @@ export default function AppLayout({ children }: AppLayoutProps) {
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
-      <div className="flex-1 md:ml-64 flex flex-col min-h-screen">
-        <TopHeader />
-        <main className="flex-1 p-4 md:p-8">
-          <motion.div
-            key={location}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.25 }}
-          >
-            {children}
-          </motion.div>
-        </main>
+      {/* Main Content — offset by exact sidebar width on md+ */}
+      <div
+        className="flex flex-col min-h-screen w-full"
+        style={{ paddingLeft: 0 }}
+      >
+        <div className="hidden md:block" style={{ width: 240, flexShrink: 0, position: "fixed", pointerEvents: "none" }} />
+        <div className="md:ml-[240px] flex flex-col flex-1 min-h-screen">
+          <TopHeader />
+          <main className="flex-1 p-4 md:p-8">
+            <motion.div
+              key={location}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              {children}
+            </motion.div>
+          </main>
+        </div>
       </div>
     </div>
   );
