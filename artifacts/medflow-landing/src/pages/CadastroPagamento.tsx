@@ -96,14 +96,6 @@ export default function CadastroPagamento() {
           <p className="text-muted-foreground text-sm">Passo 3 de 4 — insira os dados do seu cartão.</p>
         </div>
 
-        {/* Demo banner */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-6 flex items-start gap-2.5">
-          <ShieldCheck className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-          <p className="text-xs text-amber-800">
-            <strong>Ambiente de demonstração.</strong> Nenhuma cobrança real será efetuada. Use qualquer dado fictício para continuar.
-          </p>
-        </div>
-
         {/* Order summary */}
         <div className="bg-background border border-border rounded-xl p-4 mb-6">
           <p className="text-xs text-muted-foreground mb-1">Plano selecionado</p>
