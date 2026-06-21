@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -11,18 +11,96 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, ChevronLeft, ChevronRight, CalendarCheck } from "lucide-react";
 
+const STORAGE_KEY = "medflow_appointments";
+
+interface Appointment {
+  id: string;
+  paciente: string;
+  medico: string;
+  data: string;
+  hora: string;
+  convenio: string;
+  status: "Confirmado" | "Aguardando" | "Cancelado";
+  createdAt: string;
+}
+
+function loadAppointments(): Appointment[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveAppointments(list: Appointment[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
 const hours = Array.from({ length: 11 }, (_, i) => `${String(i + 8).padStart(2, "0")}:00`);
 const weekDays = ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"];
 const filters = ["Todos", "Confirmado", "Aguardando", "Cancelado"];
-
-// Replace with real data when available
-const appointments: unknown[] = [];
 
 export default function Agendamentos() {
   const [activeFilter, setActiveFilter] = useState("Todos");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [view, setView] = useState<"semana" | "dia">("semana");
+  const [appointments, setAppointments] = useState<Appointment[]>(loadAppointments);
+
+  const [paciente, setPaciente] = useState("");
+  const [medico, setMedico] = useState("");
+  const [data, setData] = useState("");
+  const [hora, setHora] = useState("");
+  const [convenio, setConvenio] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    setAppointments(loadAppointments());
+  }, []);
+
   const isEmpty = appointments.length === 0;
+
+  const filtered = activeFilter === "Todos"
+    ? appointments
+    : appointments.filter((a) => a.status === activeFilter);
+
+  function resetForm() {
+    setPaciente("");
+    setMedico("");
+    setData("");
+    setHora("");
+    setConvenio("");
+    setError("");
+  }
+
+  function handleSubmit() {
+    if (!paciente.trim()) { setError("Informe o nome do paciente."); return; }
+    if (!medico.trim()) { setError("Informe o médico."); return; }
+    if (!data) { setError("Selecione a data."); return; }
+    if (!hora) { setError("Selecione o horário."); return; }
+
+    const novo: Appointment = {
+      id: crypto.randomUUID(),
+      paciente: paciente.trim(),
+      medico: medico.trim(),
+      data,
+      hora,
+      convenio: convenio.trim() || "Particular",
+      status: "Aguardando",
+      createdAt: new Date().toISOString(),
+    };
+
+    const updated = [novo, ...appointments];
+    saveAppointments(updated);
+    setAppointments(updated);
+    setDialogOpen(false);
+    resetForm();
+  }
+
+  function handleOpenChange(open: boolean) {
+    setDialogOpen(open);
+    if (!open) resetForm();
+  }
 
   return (
     <div className="space-y-6">
@@ -82,10 +160,9 @@ export default function Agendamentos() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* Calendar Grid */}
+        {/* Main area */}
         <div className="xl:col-span-3 bg-background rounded-2xl border border-border shadow-sm overflow-hidden">
           {isEmpty ? (
-            /* Full empty state — shown when no appointments exist */
             <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
               <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
                 <CalendarCheck className="w-8 h-8 text-muted-foreground/50" />
@@ -99,46 +176,61 @@ export default function Agendamentos() {
               </Button>
             </div>
           ) : (
-            /* Calendar grid — only shown when there are appointments */
-            <>
-              <div className="grid grid-cols-8 border-b border-border">
-                <div className="px-4 py-3 text-xs text-muted-foreground" />
-                {weekDays.map((day) => (
-                  <div
-                    key={day}
-                    className="px-2 py-3 text-center text-xs font-medium text-muted-foreground border-l border-border"
-                  >
-                    {day.slice(0, 3)}
-                  </div>
-                ))}
+            <div className="overflow-y-auto max-h-[600px]">
+              {/* Header */}
+              <div className="grid grid-cols-5 border-b border-border px-4 py-3 text-xs font-medium text-muted-foreground">
+                <span>Paciente</span>
+                <span>Médico</span>
+                <span>Data</span>
+                <span>Horário</span>
+                <span>Status</span>
               </div>
-              <div className="overflow-y-auto max-h-[520px]">
-                {hours.map((hour) => (
-                  <div key={hour} className="grid grid-cols-8 border-b border-border/50 min-h-[56px]">
-                    <div className="px-4 py-2 text-xs text-muted-foreground flex items-start pt-2">{hour}</div>
-                    {weekDays.map((_, di) => (
-                      <div key={di} className="border-l border-border/50 p-1" />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </>
+              {filtered.map((appt) => (
+                <div key={appt.id} className="grid grid-cols-5 px-4 py-3 border-b border-border/50 text-sm items-center hover:bg-muted/30 transition-colors">
+                  <span className="font-medium text-foreground">{appt.paciente}</span>
+                  <span className="text-muted-foreground">{appt.medico}</span>
+                  <span className="text-muted-foreground">{new Date(appt.data + "T12:00:00").toLocaleDateString("pt-BR")}</span>
+                  <span className="text-muted-foreground">{appt.hora}</span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium w-fit ${
+                    appt.status === "Confirmado" ? "bg-emerald-50 text-emerald-700" :
+                    appt.status === "Cancelado" ? "bg-rose-50 text-rose-700" :
+                    "bg-amber-50 text-amber-700"
+                  }`}>{appt.status}</span>
+                </div>
+              ))}
+              {filtered.length === 0 && (
+                <div className="py-12 text-center text-sm text-muted-foreground">
+                  Nenhum agendamento com este filtro.
+                </div>
+              )}
+            </div>
           )}
         </div>
 
         {/* Today Sidebar */}
         <div className="bg-background rounded-2xl border border-border shadow-sm p-5 flex flex-col">
           <h3 className="font-semibold text-foreground mb-4">Hoje</h3>
-          <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
-            <CalendarCheck className="w-8 h-8 text-muted-foreground/30 mb-3" />
-            <p className="text-sm font-medium text-muted-foreground mb-1">Nenhum agendamento</p>
-            <p className="text-xs text-muted-foreground">
-              {new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}
-            </p>
-          </div>
+          {appointments.filter(a => a.data === new Date().toISOString().split("T")[0]).length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center py-8 text-center">
+              <CalendarCheck className="w-8 h-8 text-muted-foreground/30 mb-3" />
+              <p className="text-sm font-medium text-muted-foreground mb-1">Nenhum agendamento</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date().toLocaleDateString("pt-BR", { day: "numeric", month: "long" })}
+              </p>
+            </div>
+          ) : (
+            <div className="flex-1 space-y-2">
+              {appointments.filter(a => a.data === new Date().toISOString().split("T")[0]).map(a => (
+                <div key={a.id} className="text-sm p-3 rounded-xl bg-muted/50">
+                  <p className="font-medium">{a.hora} — {a.paciente}</p>
+                  <p className="text-xs text-muted-foreground">{a.medico}</p>
+                </div>
+              ))}
+            </div>
+          )}
           <Button
             variant="outline"
-            className="w-full text-sm"
+            className="w-full text-sm mt-4"
             onClick={() => setDialogOpen(true)}
             data-testid="button-add-sidebar"
           >
@@ -148,40 +240,41 @@ export default function Agendamentos() {
       </div>
 
       {/* New Appointment Dialog */}
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Nova Consulta</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="paciente">Paciente</Label>
-              <Input id="paciente" placeholder="Buscar paciente..." data-testid="input-paciente" />
+              <Label htmlFor="paciente">Paciente *</Label>
+              <Input id="paciente" placeholder="Nome do paciente" value={paciente} onChange={e => setPaciente(e.target.value)} data-testid="input-paciente" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="medico">Médico</Label>
-              <Input id="medico" placeholder="Selecionar médico" data-testid="input-medico" />
+              <Label htmlFor="medico">Médico *</Label>
+              <Input id="medico" placeholder="Nome do médico" value={medico} onChange={e => setMedico(e.target.value)} data-testid="input-medico" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label htmlFor="data">Data</Label>
-                <Input id="data" type="date" data-testid="input-data" />
+                <Label htmlFor="data">Data *</Label>
+                <Input id="data" type="date" value={data} onChange={e => setData(e.target.value)} data-testid="input-data" />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="hora">Hora</Label>
-                <Input id="hora" type="time" data-testid="input-hora" />
+                <Label htmlFor="hora">Hora *</Label>
+                <Input id="hora" type="time" value={hora} onChange={e => setHora(e.target.value)} data-testid="input-hora" />
               </div>
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="convenio">Convênio</Label>
-              <Input id="convenio" placeholder="Particular / Convênio" data-testid="input-convenio" />
+              <Input id="convenio" placeholder="Particular / Convênio" value={convenio} onChange={e => setConvenio(e.target.value)} data-testid="input-convenio" />
             </div>
+            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} data-testid="button-cancelar">
+            <Button variant="outline" onClick={() => handleOpenChange(false)} data-testid="button-cancelar">
               Cancelar
             </Button>
-            <Button onClick={() => setDialogOpen(false)} data-testid="button-confirmar-consulta">
+            <Button onClick={handleSubmit} data-testid="button-confirmar-consulta">
               Agendar Consulta
             </Button>
           </DialogFooter>

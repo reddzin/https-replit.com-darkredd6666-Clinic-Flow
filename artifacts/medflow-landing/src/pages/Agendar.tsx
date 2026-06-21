@@ -84,7 +84,7 @@ function ClinicNotFound({ slug }: { slug: string }) {
           Não existe nenhuma clínica cadastrada com o endereço:
         </p>
         <code className="text-sm bg-muted px-3 py-1.5 rounded-lg text-foreground mb-6 font-mono">
-          medflow.com.br/{slug}
+          {window.location.origin}/agendar/{slug}
         </code>
         <p className="text-sm text-muted-foreground max-w-xs mb-6">
           Verifique se o link está correto ou entre em contato com a clínica para obter o link atualizado.

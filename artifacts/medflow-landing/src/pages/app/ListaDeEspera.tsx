@@ -1,13 +1,14 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { UsersRound, Plus, ArrowUp, Lock } from "lucide-react";
-
-// Simulated plan: change to "pro" or "supreme" to unlock
-const CURRENT_PLAN = "essencial";
+import { getSession } from "@/lib/clinic";
 
 export default function ListaDeEspera() {
-  const [plan] = useState<"essencial" | "pro" | "supreme">(CURRENT_PLAN as "essencial" | "pro" | "supreme");
-  const hasAccess = plan === "pro" || plan === "supreme";
+  const [, setLocation] = useLocation();
+  const session = getSession();
+  const plan = (session?.plan ?? "essencial") as "essencial" | "pro" | "supreme";
+  const [hasAccess] = useState(plan === "pro" || plan === "supreme");
 
   return (
     <div className="space-y-6">
@@ -23,7 +24,6 @@ export default function ListaDeEspera() {
       </div>
 
       <div className="bg-background rounded-2xl border border-border shadow-sm overflow-hidden relative">
-        {/* Content — always rendered but blurred if no access */}
         <div className={hasAccess ? "" : "blur-sm pointer-events-none select-none"}>
           <div className="px-6 py-4 border-b border-border">
             <p className="text-sm font-medium text-muted-foreground">0 pacientes na fila</p>
@@ -42,7 +42,6 @@ export default function ListaDeEspera() {
           </div>
         </div>
 
-        {/* Upgrade Overlay — only for Essencial plan */}
         {!hasAccess && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-2xl p-8 text-center">
             <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
@@ -53,10 +52,10 @@ export default function ListaDeEspera() {
               A Lista de Espera está disponível nos planos <strong>Pro</strong> e <strong>Supreme</strong>. Faça upgrade para gerenciar filas de espera, notificar pacientes automaticamente e reduzir cancelamentos.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
-              <Button data-testid="button-upgrade-plan">
+              <Button onClick={() => setLocation("/cadastro/planos")} data-testid="button-upgrade-plan">
                 <ArrowUp className="w-4 h-4 mr-2" /> Fazer Upgrade para Pro
               </Button>
-              <Button variant="outline" data-testid="button-ver-planos">
+              <Button variant="outline" onClick={() => setLocation("/cadastro/planos")} data-testid="button-ver-planos">
                 Ver Planos
               </Button>
             </div>
