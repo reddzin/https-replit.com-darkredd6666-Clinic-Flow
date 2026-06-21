@@ -6,18 +6,15 @@ export function CTA() {
   const [, setLocation] = useLocation();
 
   return (
-    <section className="py-24 relative overflow-hidden bg-primary">
-      <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
-      <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80" />
-
+    <section className="py-24 relative overflow-hidden bg-[#166534]">
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center text-primary-foreground">
+        <div className="max-w-4xl mx-auto text-center text-white">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-4xl md:text-5xl font-bold mb-6"
+            className="text-4xl md:text-5xl font-extrabold mb-6"
           >
             Eleve o padrão da sua clínica hoje mesmo
           </motion.h2>
@@ -41,7 +38,7 @@ export function CTA() {
           >
             <Button
               size="lg"
-              className="h-14 px-8 text-base rounded-full bg-white text-primary hover:bg-white/90 shadow-xl border-0 w-full sm:w-auto"
+              className="h-14 px-8 text-base rounded-full bg-white text-[#166534] hover:bg-[#f0fdf4] border-0 shadow-none w-full sm:w-auto font-bold"
               onClick={() => setLocation("/cadastro")}
               data-testid="button-cta-start"
             >
@@ -50,7 +47,7 @@ export function CTA() {
             <Button
               size="lg"
               variant="outline"
-              className="h-14 px-8 text-base rounded-full border-white/30 text-white hover:bg-white/10 w-full sm:w-auto bg-transparent"
+              className="h-14 px-8 text-base rounded-full border-2 border-white/40 text-white hover:bg-white/10 w-full sm:w-auto bg-transparent"
               onClick={() => setLocation("/contato")}
               data-testid="button-cta-sales"
             >

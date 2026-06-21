@@ -8,6 +8,8 @@ const plans = [
     name: "Essencial",
     price: "R$79",
     badge: "Limitado",
+    badgeStyle: "bg-[#6b7280] text-white",
+    borderStyle: "border border-[#e5e7eb]",
     description: "Ideal para consultórios individuais iniciando a digitalização.",
     features: [
       "1 Profissional de Saúde",
@@ -17,12 +19,14 @@ const plans = [
       "Suporte em horário comercial",
     ],
     popular: false,
-    buttonVariant: "outline" as const,
+    buttonClass: "bg-[#166534] hover:bg-[#14532d] text-white border-0",
   },
   {
     name: "Pro",
     price: "R$137",
     badge: "Mais popular",
+    badgeStyle: "bg-[#16a34a] text-white",
+    borderStyle: "border-2 border-[#16a34a] shadow-lg shadow-[#16a34a]/10",
     description: "A solução completa para clínicas em crescimento.",
     features: [
       "Até 5 Profissionais de Saúde",
@@ -33,12 +37,14 @@ const plans = [
       "Dashboard de BI",
     ],
     popular: true,
-    buttonVariant: "default" as const,
+    buttonClass: "bg-[#16a34a] hover:bg-[#166534] text-white border-0",
   },
   {
     name: "Supreme",
     price: "R$197",
     badge: "Premium",
+    badgeStyle: "bg-[#166534] text-white",
+    borderStyle: "border-2 border-[#166534] shadow-lg shadow-[#166534]/10",
     description: "Para redes de clínicas e operações de grande volume.",
     features: [
       "Profissionais Ilimitados",
@@ -49,7 +55,7 @@ const plans = [
       "Implantação Presencial",
     ],
     popular: false,
-    buttonVariant: "outline" as const,
+    buttonClass: "bg-[#166534] hover:bg-[#14532d] text-white border-0",
   },
 ];
 
@@ -57,13 +63,13 @@ export function Pricing() {
   const [, setLocation] = useLocation();
 
   return (
-    <section id="precos" className="py-24 bg-background scroll-mt-20">
+    <section id="precos" className="py-24 bg-white scroll-mt-20">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#111827]">
             Planos que acompanham seu crescimento
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-[#6b7280]">
             Sem taxas de adesão, cancele quando quiser. Escolha o plano ideal para a sua estrutura.
           </p>
         </div>
@@ -76,22 +82,18 @@ export function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className={`relative p-8 rounded-3xl border flex flex-col h-full bg-card ${
-                plan.popular
-                  ? "border-primary shadow-xl shadow-primary/10"
-                  : "border-border shadow-sm"
-              }`}
+              className={`relative p-8 rounded-3xl flex flex-col h-full bg-white ${plan.borderStyle}`}
             >
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium tracking-wide">
+              <div className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 px-4 py-1 rounded-full text-sm font-semibold tracking-wide ${plan.badgeStyle}`}>
                 {plan.badge}
               </div>
 
               <div className="mb-8">
-                <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
-                <p className="text-muted-foreground text-sm min-h-[40px]">{plan.description}</p>
+                <h3 className="text-2xl font-extrabold mb-2 text-[#111827]">{plan.name}</h3>
+                <p className="text-[#6b7280] text-sm min-h-[40px]">{plan.description}</p>
                 <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                  <span className="text-muted-foreground">/mês</span>
+                  <span className="text-4xl font-extrabold text-[#166534]">{plan.price}</span>
+                  <span className="text-[#6b7280]">/mês</span>
                 </div>
               </div>
 
@@ -99,8 +101,8 @@ export function Pricing() {
                 <ul className="space-y-4">
                   {plan.features.map((feature, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                      <span className="text-sm text-foreground">{feature}</span>
+                      <CheckCircle2 className="h-5 w-5 text-[#16a34a] shrink-0" />
+                      <span className="text-sm text-[#111827]">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -108,12 +110,11 @@ export function Pricing() {
 
               <div className="mt-8">
                 <Button
-                  variant={plan.buttonVariant}
-                  className="w-full h-12 rounded-xl text-base"
-                  onClick={() => setLocation(plan.name === "Enterprise" ? "/contato" : "/cadastro")}
+                  className={`w-full h-12 rounded-xl text-base ${plan.buttonClass}`}
+                  onClick={() => setLocation("/cadastro")}
                   data-testid={`button-plan-${plan.name.toLowerCase()}`}
                 >
-                  {plan.name === "Enterprise" ? "Falar com Vendas" : "Começar Teste Grátis"}
+                  Começar Teste Grátis
                 </Button>
               </div>
             </motion.div>

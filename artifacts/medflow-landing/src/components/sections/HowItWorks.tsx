@@ -25,19 +25,18 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="como-funciona" className="py-24 bg-background scroll-mt-20">
+    <section id="como-funciona" className="py-24 bg-white scroll-mt-20">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">O fluxo perfeito para sua clínica</h2>
-          <p className="text-lg text-muted-foreground">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#111827]">O fluxo perfeito para sua clínica</h2>
+          <p className="text-lg text-[#6b7280]">
             Veja como o MedFlow transforma a rotina desde a marcação da consulta até o faturamento.
           </p>
         </div>
 
         <div className="relative max-w-5xl mx-auto">
-          {/* Connecting line */}
-          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-border hidden md:block -translate-y-1/2" />
-          
+          <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-[#e5e7eb] hidden md:block -translate-y-1/2" />
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {steps.map((step, index) => (
               <motion.div
@@ -48,12 +47,12 @@ export function HowItWorks() {
                 transition={{ duration: 0.5, delay: index * 0.15 }}
                 className="relative pt-8 md:pt-0"
               >
-                <div className="bg-card border border-border p-6 rounded-2xl relative z-10 h-full shadow-sm hover:shadow-md transition-shadow">
-                  <div className="absolute -top-6 md:-top-10 left-1/2 md:left-auto md:right-auto md:-translate-x-0 -translate-x-1/2 w-12 h-12 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold text-lg shadow-lg border-4 border-background">
+                <div className="bg-white border border-[#e5e7eb] shadow-[0_1px_3px_rgba(0,0,0,0.06)] p-6 rounded-2xl relative z-10 h-full">
+                  <div className="absolute -top-6 md:-top-10 left-1/2 md:left-auto md:right-auto md:-translate-x-0 -translate-x-1/2 w-12 h-12 bg-[#166534] text-white rounded-full flex items-center justify-center font-bold text-lg border-4 border-white">
                     {step.number}
                   </div>
-                  <h3 className="text-xl font-semibold mb-3 mt-4 md:mt-2">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">
+                  <h3 className="text-xl font-bold mb-3 mt-4 md:mt-2 text-[#111827]">{step.title}</h3>
+                  <p className="text-[#6b7280] text-sm leading-relaxed">
                     {step.description}
                   </p>
                 </div>
@@ -62,9 +61,9 @@ export function HowItWorks() {
           </div>
         </div>
 
-        <div className="mt-24 max-w-4xl mx-auto text-center p-8 md:p-12 rounded-3xl bg-secondary/10 border border-secondary/20">
-          <h3 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">Pronto para transformar sua clínica?</h3>
-          <p className="text-lg text-muted-foreground mb-0">
+        <div className="mt-24 max-w-4xl mx-auto text-center p-8 md:p-12 rounded-3xl bg-[#f0fdf4] border border-[#dcfce7]">
+          <h3 className="text-2xl md:text-3xl font-extrabold mb-4 text-[#166534]">Pronto para transformar sua clínica?</h3>
+          <p className="text-lg text-[#6b7280] mb-0">
             A implantação é guiada por nossos especialistas e leva menos de 48 horas para você começar a operar com força total.
           </p>
         </div>
