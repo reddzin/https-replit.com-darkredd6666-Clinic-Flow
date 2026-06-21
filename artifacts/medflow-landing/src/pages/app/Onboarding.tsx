@@ -236,7 +236,7 @@ export default function Onboarding() {
                   />
                   {clinicName.trim().length >= 2 && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      Link de agendamento: <span className="font-mono text-primary">{window.location.origin}/booking/{generateSlug(clinicName)}</span>
+                      Link de agendamento: <span className="font-mono text-primary">{window.location.origin}{import.meta.env.BASE_URL.replace(/\/$/, "")}/booking/{generateSlug(clinicName)}</span>
                     </p>
                   )}
                 </div>

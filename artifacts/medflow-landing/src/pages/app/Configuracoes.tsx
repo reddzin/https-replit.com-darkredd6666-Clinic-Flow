@@ -13,7 +13,10 @@ import {
   CheckCircle2,
   XCircle,
   Plus,
+  Check,
+  Link2,
 } from "lucide-react";
+import { getSession, saveSession, generateSlug } from "@/lib/clinic";
 
 const tabs = [
   { id: "clinica", label: "Clínica", icon: Building },
@@ -66,6 +69,39 @@ export default function Configuracoes() {
   const [convAtivos, setConvAtivos] = useState(convenios.map(c => c.active));
   const [notifAtivos, setNotifAtivos] = useState(notificacoes.map(() => true));
 
+  // Clinic data from localStorage
+  const session = getSession();
+  const [clinicName, setClinicName] = useState(session?.clinicName ?? "");
+  const [clinicPhone, setClinicPhone] = useState(session?.clinicPhone ?? "");
+  const [clinicEmail, setClinicEmail] = useState(session?.email ?? "");
+  const [clinicAddress, setClinicAddress] = useState(session?.clinicAddress ?? "");
+  const [clinicSlug, setClinicSlug] = useState(session?.clinicSlug ?? "");
+  const [savedClinic, setSavedClinic] = useState(false);
+
+  function handleSaveClinic() {
+    const slugToSave = clinicSlug.trim() || generateSlug(clinicName);
+    saveSession({
+      clinicName: clinicName.trim(),
+      clinicSlug: slugToSave,
+      clinicPhone: clinicPhone.trim(),
+      email: clinicEmail.trim(),
+      clinicAddress: clinicAddress.trim(),
+    });
+    setClinicSlug(slugToSave);
+    setSavedClinic(true);
+    setTimeout(() => setSavedClinic(false), 2500);
+  }
+
+  function handleSlugInput(val: string) {
+    // Allow only URL-safe characters
+    setClinicSlug(val.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-"));
+  }
+
+  const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const bookingPreview = clinicSlug
+    ? `${window.location.origin}${base}/booking/${clinicSlug}`
+    : "";
+
   return (
     <div className="flex gap-6 flex-col md:flex-row">
       {/* Sidebar Tabs */}
@@ -96,27 +132,77 @@ export default function Configuracoes() {
             <h3 className="font-semibold text-foreground text-lg">Dados da Clínica</h3>
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label>Nome da Clínica</Label>
-                <Input defaultValue="Clínica Saúde & Bem-Estar" data-testid="input-clinic-name" />
-              </div>
-              <div className="space-y-1.5">
-                <Label>CNPJ</Label>
-                <Input defaultValue="12.345.678/0001-99" data-testid="input-cnpj" />
+                <Label htmlFor="cfg-clinic-name">Nome da Clínica</Label>
+                <Input
+                  id="cfg-clinic-name"
+                  value={clinicName}
+                  onChange={e => setClinicName(e.target.value)}
+                  placeholder="Nome da clínica"
+                  data-testid="input-clinic-name"
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <Label>Telefone</Label>
-                  <Input defaultValue="(11) 3456-7890" data-testid="input-phone" />
+                  <Label htmlFor="cfg-phone">Telefone</Label>
+                  <Input
+                    id="cfg-phone"
+                    value={clinicPhone}
+                    onChange={e => setClinicPhone(e.target.value)}
+                    placeholder="(11) 99999-9999"
+                    data-testid="input-phone"
+                  />
                 </div>
                 <div className="space-y-1.5">
-                  <Label>E-mail</Label>
-                  <Input defaultValue="contato@clinica.com" data-testid="input-email" />
+                  <Label htmlFor="cfg-email">E-mail</Label>
+                  <Input
+                    id="cfg-email"
+                    value={clinicEmail}
+                    onChange={e => setClinicEmail(e.target.value)}
+                    placeholder="contato@clinica.com"
+                    data-testid="input-email"
+                  />
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label>Endereço</Label>
-                <Input defaultValue="Av. Paulista, 1578, Bela Vista — São Paulo/SP" data-testid="input-address" />
+                <Label htmlFor="cfg-address">Endereço</Label>
+                <Input
+                  id="cfg-address"
+                  value={clinicAddress}
+                  onChange={e => setClinicAddress(e.target.value)}
+                  placeholder="Rua, número, bairro, cidade"
+                  data-testid="input-address"
+                />
               </div>
+
+              {/* Slug / booking link */}
+              <div className="space-y-1.5 pt-2 border-t border-border">
+                <Label htmlFor="cfg-slug" className="flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-primary" />
+                  Endereço do link de agendamento
+                </Label>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center bg-muted/60 border border-border rounded-lg px-3 py-2 text-sm text-muted-foreground shrink-0">
+                    …/booking/
+                  </div>
+                  <Input
+                    id="cfg-slug"
+                    value={clinicSlug}
+                    onChange={e => handleSlugInput(e.target.value)}
+                    placeholder="minha-clinica"
+                    className="font-mono"
+                    data-testid="input-clinic-slug"
+                  />
+                </div>
+                {bookingPreview && (
+                  <p className="text-xs text-muted-foreground font-mono truncate" title={bookingPreview}>
+                    {bookingPreview}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Apenas letras minúsculas, números e hífens. Ao salvar, o link de agendamento será atualizado automaticamente.
+                </p>
+              </div>
+
               <div className="space-y-1.5">
                 <Label>Logo da Clínica</Label>
                 <div className="flex items-center gap-4 p-4 border-2 border-dashed border-border rounded-xl hover:border-primary/40 transition-colors cursor-pointer">
@@ -131,7 +217,13 @@ export default function Configuracoes() {
                 </div>
               </div>
             </div>
-            <Button data-testid="button-salvar-clinica">Salvar Alterações</Button>
+            <Button
+              onClick={handleSaveClinic}
+              className={`gap-2 transition-all ${savedClinic ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+              data-testid="button-salvar-clinica"
+            >
+              {savedClinic ? <><Check className="w-4 h-4" />Salvo!</> : "Salvar Alterações"}
+            </Button>
           </div>
         )}
 
