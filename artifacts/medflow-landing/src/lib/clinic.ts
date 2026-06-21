@@ -45,6 +45,7 @@ export interface ClinicSession {
   clinicPhone?: string;
   clinicCity?: string;
   clinicState?: string;
+  logoUrl?: string;
 
   // Onboarding
   onboarding_completed: boolean;

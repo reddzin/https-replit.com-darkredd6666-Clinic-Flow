@@ -76,7 +76,7 @@ export default function Configuracoes() {
   const [clinicEmail, setClinicEmail] = useState(session?.email ?? "");
   const [clinicAddress, setClinicAddress] = useState(session?.clinicAddress ?? "");
   const [clinicSlug, setClinicSlug] = useState(session?.clinicSlug ?? "");
-  const [logoPreview, setLogoPreview] = useState<string | null>((session as any)?.logoUrl ?? null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(session?.logoUrl ?? null);
   const [savedClinic, setSavedClinic] = useState(false);
   const [logoError, setLogoError] = useState("");
 
@@ -86,35 +86,65 @@ export default function Configuracoes() {
     logoInputRef.current?.click();
   }
 
-  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function compressImage(file: File, maxDimension = 300, quality = 0.82): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => {
+        const img = new Image();
+        img.onerror = reject;
+        img.onload = () => {
+          const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
+          const w = Math.round(img.width * scale);
+          const h = Math.round(img.height * scale);
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d")!;
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.src = reader.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      setLogoError("Arquivo deve ter no máximo 2 MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      setLogoError("Arquivo deve ter no máximo 5 MB.");
       e.target.value = "";
       return;
     }
     setLogoError("");
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      setLogoPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
     e.target.value = "";
+
+    try {
+      const compressed = await compressImage(file);
+      setLogoPreview(compressed);
+    } catch {
+      setLogoError("Erro ao processar a imagem. Tente outro arquivo.");
+    }
   }
 
   function handleSaveClinic() {
     const slugToSave = clinicSlug.trim() || generateSlug(clinicName);
-    saveSession({
-      clinicName: clinicName.trim(),
-      clinicSlug: slugToSave,
-      clinicPhone: clinicPhone.trim(),
-      email: clinicEmail.trim(),
-      clinicAddress: clinicAddress.trim(),
-      logoUrl: logoPreview ?? undefined,
-    } as any);
+    try {
+      saveSession({
+        clinicName: clinicName.trim(),
+        clinicSlug: slugToSave,
+        clinicPhone: clinicPhone.trim(),
+        email: clinicEmail.trim(),
+        clinicAddress: clinicAddress.trim(),
+        logoUrl: logoPreview ?? undefined,
+      });
+    } catch {
+      setLogoError("Erro ao salvar: armazenamento local cheio. Tente uma imagem menor.");
+      return;
+    }
     setClinicSlug(slugToSave);
     setSavedClinic(true);
     setTimeout(() => setSavedClinic(false), 2500);
