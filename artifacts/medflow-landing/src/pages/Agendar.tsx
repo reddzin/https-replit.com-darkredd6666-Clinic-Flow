@@ -17,8 +17,12 @@ import {
   Baby,
   Bone,
   SearchX,
+  Mail,
+  Lock,
+  EyeOff,
 } from "lucide-react";
 import { getClinicData, type ClinicData } from "@/lib/clinic";
+import { savePatientSession } from "@/lib/patient";
 
 const specialties = [
   { id: "clinica-geral", label: "Clínica Geral", icon: Stethoscope, color: "bg-blue-50 text-blue-600 border-blue-200" },
@@ -98,18 +102,25 @@ function ClinicNotFound({ slug }: { slug: string }) {
 }
 
 // ── Booking flow ─────────────────────────────────────────────────────────────
-type Step = "specialty" | "date" | "info" | "confirm";
+type Step = "specialty" | "doctor" | "date" | "info" | "confirm";
 const stepLabels = ["Especialidade", "Data e hora", "Seus dados", "Confirmação"];
-const stepIndex: Record<Step, number> = { specialty: 0, date: 1, info: 2, confirm: 3 };
+const stepIndex: Record<Step, number> = { specialty: 0, doctor: 0, date: 1, info: 2, confirm: 3 };
+
+type Doctor = { id: string; name: string; specialty: string; crm: string };
 
 function BookingFlow({ clinic }: { clinic: ClinicData }) {
   const [, setLocation] = useLocation();
   const [step, setStep] = useState<Step>("specialty");
   const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [patientEmail, setPatientEmail] = useState("");
+  const [patientPassword, setPatientPassword] = useState("");
+  const [showPass, setShowPass] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -122,6 +133,25 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
 
   const currentIndex = stepIndex[step];
   const specialtyLabel = specialties.find((s) => s.id === selectedSpecialty)?.label ?? "";
+
+  const allDoctors: Doctor[] = Array.isArray(clinic.doctors)
+    ? (clinic.doctors as Doctor[])
+    : [];
+
+  const getDocsForSpecialty = (spId: string, spLabel: string) =>
+    allDoctors.filter((d) => {
+      const normalized = d.specialty
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+      return normalized === spId || d.specialty.toLowerCase() === spLabel.toLowerCase();
+    });
+
+  const filteredDoctors = selectedSpecialty
+    ? getDocsForSpecialty(selectedSpecialty, specialtyLabel)
+    : [];
 
   const prevMonth = () => {
     if (calMonth === 0) { setCalYear((y) => y - 1); setCalMonth(11); }
@@ -189,7 +219,17 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {specialties.map((sp) => (
                   <button key={sp.id}
-                    onClick={() => { setSelectedSpecialty(sp.id); setStep("date"); }}
+                    onClick={() => {
+                    setSelectedSpecialty(sp.id);
+                    setSelectedDoctor(null);
+                    const docs = getDocsForSpecialty(sp.id, sp.label);
+                    if (docs.length > 1) {
+                      setStep("doctor");
+                    } else {
+                      if (docs.length === 1) setSelectedDoctor(docs[0]);
+                      setStep("date");
+                    }
+                  }}
                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl border-2 transition-all hover:shadow-md ${
                       selectedSpecialty === sp.id ? "border-primary bg-primary/5" : "border-border bg-background hover:border-primary/40"
                     }`}
@@ -204,15 +244,49 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
             </motion.div>
           )}
 
+          {/* Step 1.5 – Doctor selection (conditional) */}
+          {step === "doctor" && (
+            <motion.div key="doctor" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
+              <button onClick={() => setStep("specialty")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
+                <ChevronLeft className="w-4 h-4" /> Voltar
+              </button>
+              <h2 className="text-xl font-bold text-foreground mb-1">Escolha o médico</h2>
+              <p className="text-sm text-muted-foreground mb-6">
+                Especialidade: <span className="font-medium text-foreground">{specialtyLabel}</span>
+              </p>
+              <div className="space-y-3">
+                {filteredDoctors.map((doc) => {
+                  const initials = doc.name.split(" ").slice(0, 2).map((w: string) => w[0]?.toUpperCase() ?? "").join("");
+                  return (
+                    <button
+                      key={doc.id}
+                      onClick={() => { setSelectedDoctor(doc); setStep("date"); }}
+                      className="w-full flex items-center gap-4 p-4 rounded-2xl border-2 border-border bg-background hover:border-primary/50 hover:shadow-md transition-all text-left"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 font-bold text-primary text-sm">
+                        {initials}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground text-sm">{doc.name}</p>
+                        <p className="text-xs text-muted-foreground">{doc.specialty}{doc.crm ? ` · CRM ${doc.crm}` : ""}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          )}
+
           {/* Step 2 – Date & Time */}
           {step === "date" && (
             <motion.div key="date" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }}>
-              <button onClick={() => setStep("specialty")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
+              <button onClick={() => setStep(filteredDoctors.length > 1 ? "doctor" : "specialty")} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4 transition-colors">
                 <ChevronLeft className="w-4 h-4" /> Voltar
               </button>
               <h2 className="text-xl font-bold text-foreground mb-1">Escolha a data</h2>
               <p className="text-sm text-muted-foreground mb-6">
-                Especialidade: <span className="font-medium text-foreground">{specialtyLabel}</span>
+                <span className="font-medium text-foreground">{specialtyLabel}</span>
+                {selectedDoctor && <span className="text-muted-foreground"> · {selectedDoctor.name}</span>}
               </p>
               <div className="bg-background border border-border rounded-2xl p-5 mb-5 shadow-sm">
                 <div className="flex items-center justify-between mb-4">
@@ -295,9 +369,86 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">Você receberá a confirmação por WhatsApp.</p>
                 </div>
+
+                {/* Optional account creation */}
+                <div className="border border-dashed border-border rounded-xl p-4 bg-muted/20">
+                  <p className="text-sm font-medium text-foreground mb-0.5">Salvar histórico? <span className="text-muted-foreground font-normal">(opcional)</span></p>
+                  <p className="text-xs text-muted-foreground mb-3">Crie uma conta para acompanhar suas consultas.</p>
+                  <div className="space-y-3">
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input type="email" placeholder="seu@email.com" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)}
+                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+                    {patientEmail.trim() && (
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input type={showPass ? "text" : "password"} placeholder="Crie uma senha (mín. 6 chars)" value={patientPassword} onChange={(e) => setPatientPassword(e.target.value)}
+                          className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                        />
+                        <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                          {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
-              <Button className="w-full mt-6" disabled={!name.trim() || !phone.trim()} onClick={() => setStep("confirm")}>
-                Confirmar agendamento <CheckCircle2 className="w-4 h-4 ml-1" />
+              <Button
+                className="w-full mt-6"
+                disabled={!name.trim() || !phone.trim() || saving}
+                onClick={async () => {
+                  setSaving(true);
+                  try {
+                    const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}`;
+                    const emailToUse = patientEmail.trim() || `${phone.replace(/\D/g, "")}@guest.medflow.app`;
+
+                    if (patientEmail.trim() && patientPassword.trim()) {
+                      try {
+                        const regRes = await fetch("/api/patients/register", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ name, phone, email: patientEmail.trim(), password: patientPassword }),
+                        });
+                        if (regRes.ok) {
+                          const { token, patient } = await regRes.json();
+                          savePatientSession({ token, id: patient.id, name: patient.name, email: patient.email, phone: patient.phone });
+                        } else if (regRes.status === 409) {
+                          const loginRes = await fetch("/api/patients/login", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ email: patientEmail.trim(), password: patientPassword }),
+                          });
+                          if (loginRes.ok) {
+                            const { token, patient } = await loginRes.json();
+                            savePatientSession({ token, id: patient.id, name: patient.name, email: patient.email, phone: patient.phone });
+                          }
+                        }
+                      } catch { /* ignore registration errors */ }
+                    }
+
+                    await fetch("/api/appointments", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        patientEmail: emailToUse,
+                        clinicSlug: clinic.clinicSlug,
+                        clinicName: clinic.clinicName,
+                        doctorId: selectedDoctor?.id ?? null,
+                        doctorName: selectedDoctor?.name ?? null,
+                        specialty: specialtyLabel,
+                        appointmentDate: dateStr,
+                        appointmentTime: selectedTime,
+                      }),
+                    });
+                  } catch { /* ignore */ } finally {
+                    setSaving(false);
+                  }
+                  setStep("confirm");
+                }}
+              >
+                {saving ? "Confirmando..." : "Confirmar agendamento"} <CheckCircle2 className="w-4 h-4 ml-1" />
               </Button>
             </motion.div>
           )}

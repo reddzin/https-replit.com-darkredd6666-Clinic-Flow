@@ -4,6 +4,7 @@ import stripeWebhookRouter from "./stripe-webhook";
 import clinicsRouter from "./clinics";
 import reviewsRouter from "./reviews";
 import appReviewsRouter from "./app-reviews";
+import patientsRouter from "./patients";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(stripeWebhookRouter);
 router.use(clinicsRouter);
 router.use(reviewsRouter);
 router.use(appReviewsRouter);
+router.use(patientsRouter);
 
 export default router;

@@ -24,7 +24,10 @@ import Financeiro from "@/pages/app/Financeiro";
 import Relatorios from "@/pages/app/Relatorios";
 import Configuracoes from "@/pages/app/Configuracoes";
 import Links from "@/pages/app/Links";
+import PacienteLogin from "@/pages/paciente/Login";
+import PacienteDashboard from "@/pages/paciente/Dashboard";
 import { getSession } from "@/lib/clinic";
+import { getPatientSession } from "@/lib/patient";
 
 const queryClient = new QueryClient();
 
@@ -89,6 +92,8 @@ function Router() {
       <Route path="/booking/:slug" component={Agendar} />
       <Route path="/agendar/:slug" component={Agendar} />
       <Route path="/review/:token" component={Review} />
+      <Route path="/paciente/login" component={PacienteLogin} />
+      <Route path="/paciente/dashboard" component={PacienteDashboard} />
       <Route component={NotFound} />
     </Switch>
   );
