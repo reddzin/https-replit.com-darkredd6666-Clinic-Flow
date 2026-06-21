@@ -1,12 +1,33 @@
 import { Router, type Request, type Response } from "express";
 import { db, appReviewsTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
+
+const ADMIN_EMAIL = "igorsilvaarcini1@hotmail.com";
 
 const appReviewsRouter = Router();
 
+// GET /api/app-reviews — admin only
+appReviewsRouter.get("/app-reviews", async (req: Request, res: Response) => {
+  const adminKey = req.headers["x-admin-key"];
+  if (adminKey !== ADMIN_EMAIL) {
+    res.status(403).json({ error: "Forbidden" });
+    return;
+  }
+  try {
+    const reviews = await db
+      .select()
+      .from(appReviewsTable)
+      .orderBy(desc(appReviewsTable.createdAt));
+    res.json(reviews);
+  } catch {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /api/app-reviews
 appReviewsRouter.post("/app-reviews", async (req: Request, res: Response) => {
   try {
-    const { clinicId, ownerEmail, rating, reviewText } = req.body;
+    const { clinicId, ownerEmail, rating, reviewText, photoUrl, videoUrl } = req.body;
 
     if (!clinicId || !ownerEmail || !rating) {
       res.status(400).json({ error: "clinicId, ownerEmail and rating are required" });
@@ -19,7 +40,6 @@ appReviewsRouter.post("/app-reviews", async (req: Request, res: Response) => {
       return;
     }
 
-    // One review per clinic
     const [existing] = await db
       .select({ id: appReviewsTable.id })
       .from(appReviewsTable)
@@ -38,6 +58,8 @@ appReviewsRouter.post("/app-reviews", async (req: Request, res: Response) => {
         ownerEmail: String(ownerEmail),
         rating: ratingNum,
         reviewText: reviewText ? String(reviewText) : null,
+        photoUrl: photoUrl ? String(photoUrl) : null,
+        videoUrl: videoUrl ? String(videoUrl) : null,
       })
       .returning();
 

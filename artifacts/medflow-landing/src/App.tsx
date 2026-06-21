@@ -10,6 +10,7 @@ import CadastroPlanos from "@/pages/CadastroPlanos";
 import CadastroPagamento from "@/pages/CadastroPagamento";
 import Agendar from "@/pages/Agendar";
 import Review from "@/pages/Review";
+import Admin from "@/pages/Admin";
 import AvaliarMedFlow from "@/pages/app/AvaliarMedFlow";
 import Onboarding from "@/pages/app/Onboarding";
 import AppLayout from "@/pages/app/AppLayout";
@@ -70,6 +71,10 @@ function Router() {
 
   if (location.startsWith("/app")) {
     return <ProtectedApp />;
+  }
+
+  if (location === "/admin") {
+    return <Admin />;
   }
 
   return (
