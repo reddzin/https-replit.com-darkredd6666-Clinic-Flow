@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
@@ -56,17 +56,25 @@ const pageTitles: Record<string, string> = {
   "/app/avaliar-medflow": "Avaliar o MedFlow",
 };
 
-// Read clinic info from localStorage once at mount
+// Reactive clinic data — updates instantly when saveSession fires the custom event
 function useClinic() {
-  const data = getClinicData();
+  const [data, setData] = useState(() => getClinicData());
+
+  useEffect(() => {
+    function refresh() { setData(getClinicData()); }
+    window.addEventListener("medflow:session-updated", refresh);
+    return () => window.removeEventListener("medflow:session-updated", refresh);
+  }, []);
+
   const name = data?.clinicName ?? "Minha Clínica";
   const email = data?.email ?? "";
+  const logoUrl = data?.logoUrl ?? null;
   const initials = name
     .split(" ")
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? "")
     .join("");
-  return { name, email, initials };
+  return { name, email, initials, logoUrl };
 }
 
 interface AppLayoutProps {
@@ -175,8 +183,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
               className="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-muted transition-colors"
               data-testid="button-user-menu"
             >
-              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm">
-                {clinic.initials}
+              <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold text-sm overflow-hidden">
+                {clinic.logoUrl
+                  ? <img src={clinic.logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                  : clinic.initials}
               </div>
               <div className="hidden md:block text-left">
                 <p className="text-sm font-medium leading-tight">{clinic.name}</p>

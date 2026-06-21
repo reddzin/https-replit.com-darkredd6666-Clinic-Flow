@@ -70,6 +70,8 @@ export function getSession(): ClinicSession | null {
 export function saveSession(data: Partial<ClinicSession>): void {
   const current = getSession() ?? ({} as ClinicSession);
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...data }));
+  // Notify same-tab listeners (storage event only fires in other tabs)
+  window.dispatchEvent(new Event("medflow:session-updated"));
 }
 
 export function clearSession(): void {
