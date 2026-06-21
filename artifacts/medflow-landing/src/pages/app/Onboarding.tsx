@@ -126,6 +126,24 @@ export default function Onboarding() {
         appointmentDuration: duration,
         onboarding_completed: true,
       });
+      // Persist to the API so the booking page works from any device
+      fetch("/api/clinics", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          slug,
+          clinicName,
+          clinicType,
+          clinicAddress,
+          clinicPhone,
+          clinicCity,
+          clinicState,
+          businessHours: hours,
+          doctors,
+          appointmentDuration: duration,
+          ownerEmail: session.email,
+        }),
+      }).catch(console.error);
       setLocation("/app");
       return;
     }

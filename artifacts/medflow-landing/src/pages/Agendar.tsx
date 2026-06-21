@@ -362,17 +362,53 @@ export default function Agendar() {
   const [clinic, setClinic] = useState<ClinicData | null>(null);
 
   useEffect(() => {
-    // Simulate a brief async lookup (would be a real API call in production)
-    const timer = setTimeout(() => {
-      const data = getClinicData();
-      if (data && data.clinicSlug === urlSlug) {
-        setClinic(data);
-        setStatus("found");
-      } else {
-        setStatus("notfound");
+    let cancelled = false;
+    async function lookup() {
+      // 1. Try the API (works cross-device, for real patients)
+      try {
+        const res = await fetch(`/api/clinics/${encodeURIComponent(urlSlug.trim().toLowerCase())}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (!cancelled) {
+            // Map DB column names to ClinicData shape
+            setClinic({
+              ...data,
+              clinicSlug: data.slug,
+              clinicName: data.clinic_name ?? data.clinicName,
+              clinicAddress: data.clinic_address ?? data.clinicAddress,
+              clinicPhone: data.clinic_phone ?? data.clinicPhone,
+              clinicCity: data.clinic_city ?? data.clinicCity,
+              clinicState: data.clinic_state ?? data.clinicState,
+              clinicType: data.clinic_type ?? data.clinicType,
+              businessHours: data.business_hours ?? data.businessHours,
+              appointmentDuration: data.appointment_duration ?? data.appointmentDuration,
+              onboarding_completed: true,
+              email: data.owner_email ?? "",
+              token: "",
+              userName: "",
+              initialClinicName: data.clinic_name ?? data.clinicName ?? "",
+            });
+            setStatus("found");
+          }
+          return;
+        }
+      } catch {
+        // API not available — fall through to localStorage
       }
-    }, 600);
-    return () => clearTimeout(timer);
+
+      // 2. Fallback: same-browser localStorage session
+      const data = getClinicData();
+      if (!cancelled) {
+        if (data && data.clinicSlug.trim().toLowerCase() === urlSlug.trim().toLowerCase()) {
+          setClinic(data);
+          setStatus("found");
+        } else {
+          setStatus("notfound");
+        }
+      }
+    }
+    lookup();
+    return () => { cancelled = true; };
   }, [urlSlug]);
 
   if (status === "loading") return <LoadingSkeleton />;
