@@ -44,15 +44,6 @@ export function CTA() {
             >
               Comece seu Teste Grátis
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="h-14 px-8 text-base rounded-full border-2 border-white/40 text-white hover:bg-white/10 w-full sm:w-auto bg-transparent"
-              onClick={() => setLocation("/contato")}
-              data-testid="button-cta-sales"
-            >
-              Falar com Consultor
-            </Button>
           </motion.div>
         </div>
       </div>
