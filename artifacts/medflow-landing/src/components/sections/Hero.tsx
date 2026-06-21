@@ -11,14 +11,13 @@ export function Hero() {
       <div className="absolute inset-0 bg-background pointer-events-none" />
       <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 translate-y-1/3 -translate-x-1/3 w-[600px] h-[600px] bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
-
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary font-medium text-sm mb-6"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 font-medium text-sm mb-6 text-[#00ff35]"
           >
             <span className="flex h-2 w-2 rounded-full bg-primary"></span>
             A nova era da gestão clínica
