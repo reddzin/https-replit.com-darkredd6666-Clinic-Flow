@@ -1,0 +1,27 @@
+```
+Bug na aba de Avaliações: atualmente o formulário de avaliação está pedindo para avaliar "o app" em vez de avaliar a consulta que o paciente teve na clínica. Isso está conceitualmente errado — quem avalia é o paciente, sobre o atendimento daquela consulta específica, não sobre o sistema.
+
+Antes de corrigir, mostre:
+
+1. O texto/label exato que aparece hoje no formulário de avaliação.
+2. Para qual entidade a avaliação está sendo salva no banco — está vinculada a um appointment_id (consulta) ou é genérica sobre o app?
+
+Corrija assim:
+
+A avaliação é sempre vinculada a uma consulta (appointment) específica, do paciente daquela clínica, e deve ser solicitada após a consulta ser marcada como concluída.
+
+Cabeçalho da página de avaliação mostra: nome da clínica, nome do médico, data da consulta — e o título é "Como foi sua consulta com [nome do médico]?" — nunca "avalie o app".
+
+O formulário precisa ter, todos funcionando de verdade:
+
+1. Estrelas (1 a 5) — clicáveis, com hover progressivo iluminando em dourado, label embaixo mudando conforme a nota (Muito ruim / Ruim / Regular / Bom / Excelente).
+2. Texto — textarea obrigatória, mínimo 10 caracteres, com contador de caracteres.
+3. Foto — upload opcional, aceita JPG e PNG até 5MB, com preview e botão de remover.
+4. Vídeo — upload opcional, aceita MP4 até 30MB ou 60 segundos, com preview reproduzível e botão de remover.
+
+Botão "Enviar avaliação" fica desabilitado até estrela e texto válidos preenchidos (foto e vídeo são opcionais). Ao enviar, salva no banco vinculado ao appointment_id, clinic_id, doctor_id, com rating, text, photo_url, video_url.
+
+No painel /app/reviews da clínica, cada card de avaliação mostra a foto (se houver) e um player de vídeo (se houver) junto com texto e estrelas.
+
+Depois de corrigir, teste marcando uma consulta de exemplo como concluída, gere o link de avaliação, acesse ele e confirme que o formulário aparece corretamente perguntando sobre a consulta — e não sobre o app. Mostre print do resultado, não só diga que corrigiu.
+```

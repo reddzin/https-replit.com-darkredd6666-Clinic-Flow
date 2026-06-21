@@ -9,6 +9,7 @@ import Cadastro from "@/pages/Cadastro";
 import CadastroPlanos from "@/pages/CadastroPlanos";
 import CadastroPagamento from "@/pages/CadastroPagamento";
 import Agendar from "@/pages/Agendar";
+import Review from "@/pages/Review";
 import Onboarding from "@/pages/app/Onboarding";
 import AppLayout from "@/pages/app/AppLayout";
 import Dashboard from "@/pages/app/Dashboard";
@@ -78,6 +79,7 @@ function Router() {
       <Route path="/cadastro/pagamento" component={CadastroPagamento} />
       <Route path="/booking/:slug" component={Agendar} />
       <Route path="/agendar/:slug" component={Agendar} />
+      <Route path="/review/:token" component={Review} />
       <Route component={NotFound} />
     </Switch>
   );
