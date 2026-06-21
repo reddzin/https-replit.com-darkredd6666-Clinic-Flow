@@ -23,6 +23,7 @@ import Prontuarios from "@/pages/app/Prontuarios";
 import Financeiro from "@/pages/app/Financeiro";
 import Relatorios from "@/pages/app/Relatorios";
 import Configuracoes from "@/pages/app/Configuracoes";
+import Links from "@/pages/app/Links";
 import { getSession } from "@/lib/clinic";
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ function ProtectedApp() {
         <Route path="/app/prontuarios" component={Prontuarios} />
         <Route path="/app/financeiro" component={Financeiro} />
         <Route path="/app/relatorios" component={Relatorios} />
+        <Route path="/app/links" component={Links} />
         <Route path="/app/configuracoes" component={Configuracoes} />
         <Route path="/app/avaliar-medflow" component={AvaliarMedFlow} />
         <Route component={NotFound} />

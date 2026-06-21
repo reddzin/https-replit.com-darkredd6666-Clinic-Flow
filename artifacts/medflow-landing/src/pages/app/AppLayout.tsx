@@ -21,6 +21,7 @@ import {
   UsersRound,
   Star,
   Sparkles,
+  Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getClinicData } from "@/lib/clinic";
@@ -36,6 +37,7 @@ const navItems = [
   { label: "Dashboard", href: "/app", icon: LayoutDashboard },
   { label: "Agendamentos", href: "/app/agendamentos", icon: CalendarCheck },
   { label: "Lista de Espera", href: "/app/lista-de-espera", icon: UsersRound },
+  { label: "Links", href: "/app/links", icon: Link2 },
   { label: "Avaliações", href: "/app/avaliacoes", icon: Star },
   { label: "Pacientes", href: "/app/pacientes", icon: Users },
   { label: "Prontuários", href: "/app/prontuarios", icon: FileText },
@@ -47,6 +49,7 @@ const pageTitles: Record<string, string> = {
   "/app": "Dashboard",
   "/app/agendamentos": "Agendamentos",
   "/app/lista-de-espera": "Lista de Espera",
+  "/app/links": "Links",
   "/app/avaliacoes": "Avaliações",
   "/app/pacientes": "Pacientes",
   "/app/prontuarios": "Prontuários",

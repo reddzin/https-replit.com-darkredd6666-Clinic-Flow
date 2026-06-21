@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { Link, useLocation } from "wouter";
+import { useMemo } from "react";
+import { useLocation } from "wouter";
 import { motion } from "framer-motion";
 import { getClinicData } from "@/lib/clinic";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,6 @@ import {
   BarChart3,
   ArrowUpRight,
   Clock,
-  Link2,
-  Copy,
-  Check,
-  MessageCircle,
 } from "lucide-react";
 
 const kpis = [
@@ -28,120 +24,6 @@ const kpis = [
 ];
 
 const weekDays = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
-
-function buildBookingUrl(slug: string): string {
-  // Include the Vite base path so the URL works correctly in Replit's
-  // path-based routing proxy (e.g. /medflow-landing/booking/my-clinic)
-  const base = import.meta.env.BASE_URL.replace(/\/$/, ""); // strip trailing slash
-  return `${window.location.origin}${base}/booking/${slug}`;
-}
-
-function BookingLinkCard() {
-  const [copied, setCopied] = useState(false);
-
-  const { slug, url } = useMemo(() => {
-    const data = getClinicData();
-    const s = (data?.clinicSlug ?? "").trim() || "minha-clinica";
-    return { slug: s, url: buildBookingUrl(s) };
-  }, []);
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(url);
-    } catch {
-      const ta = document.createElement("textarea");
-      ta.value = url;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand("copy");
-      document.body.removeChild(ta);
-    }
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleTest = () => {
-    window.open(url, "_blank", "noopener,noreferrer");
-  };
-
-  const handleWhatsApp = () => {
-    const message = encodeURIComponent(
-      `Olá! Agende sua consulta de forma rápida e fácil pelo nosso link:\n\n${url}\n\nEscolha o horário que preferir diretamente pela plataforma. 😊`
-    );
-    window.open(`https://wa.me/?text=${message}`, "_blank", "noopener");
-  };
-
-  return (
-    <div className="bg-white border border-emerald-200 rounded-2xl p-5 shadow-sm relative overflow-hidden">
-      {/* Green accent strip */}
-      <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-400 rounded-l-2xl" />
-
-      <div className="pl-3 flex flex-col gap-3">
-        {/* Title row */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center shrink-0">
-            <Link2 className="w-5 h-5 text-emerald-600" />
-          </div>
-          <div>
-            <p className="font-semibold text-foreground" style={{ fontSize: 16 }}>
-              Seu link de agendamento
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Slug: <span className="font-mono text-primary">{slug}</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Full URL display */}
-        <div className="flex items-center gap-2 bg-muted/70 border border-border rounded-lg px-3 py-2">
-          <span
-            className="text-sm text-foreground flex-1 truncate"
-            style={{ fontFamily: "ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace" }}
-            title={url}
-          >
-            {url}
-          </span>
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleCopy}
-            className={`gap-2 transition-all ${copied ? "border-emerald-400 text-emerald-600" : ""}`}
-            data-testid="button-copiar-link"
-          >
-            {copied ? <><Check className="w-4 h-4" />Copiado!</> : <><Copy className="w-4 h-4" />Copiar</>}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleTest}
-            className="gap-2"
-            data-testid="button-testar-link"
-          >
-            <ArrowUpRight className="w-4 h-4" />
-            Testar
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleWhatsApp}
-            className="gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white border-0"
-            data-testid="button-whatsapp"
-          >
-            <MessageCircle className="w-4 h-4" />
-            WhatsApp
-          </Button>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Compartilhe para que pacientes agendem consultas online. Edite o slug em{" "}
-          <Link href="/app/configuracoes" className="text-primary hover:underline font-medium">Configurações</Link>.
-        </p>
-      </div>
-    </div>
-  );
-}
 
 // 3D Bar component with CSS transforms
 function Bar3D({
@@ -268,9 +150,6 @@ export default function Dashboard() {
           })}
         </p>
       </div>
-
-      {/* Booking Link Card */}
-      <BookingLinkCard />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
