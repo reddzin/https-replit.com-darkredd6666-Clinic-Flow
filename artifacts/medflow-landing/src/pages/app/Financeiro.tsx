@@ -2,17 +2,101 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { DollarSign, TrendingUp, TrendingDown, AlertCircle, FileText, Download } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const kpis = [
-  { label: "Receita Bruta", value: "R$ 0", change: "Nenhuma entrada", icon: DollarSign, color: "bg-emerald-50 text-emerald-600" },
-  { label: "Receita Líquida", value: "R$ 0", change: "Nenhuma entrada", icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
-  { label: "Inadimplência", value: "R$ 0", change: "Sem pendências", icon: TrendingDown, color: "bg-amber-50 text-amber-600" },
-  { label: "Guias Pendentes", value: "R$ 0", change: "Nenhuma guia", icon: AlertCircle, color: "bg-rose-50 text-rose-600" },
+  { label: "Receita Bruta", value: "R$ 0", raw: 0, icon: DollarSign, color: "bg-emerald-50 text-emerald-600" },
+  { label: "Receita Líquida", value: "R$ 0", raw: 0, icon: TrendingUp, color: "bg-blue-50 text-blue-600" },
+  { label: "Inadimplência", value: "R$ 0", raw: 0, icon: TrendingDown, color: "bg-amber-50 text-amber-600" },
+  { label: "Guias Pendentes", value: "R$ 0", raw: 0, icon: AlertCircle, color: "bg-rose-50 text-rose-600" },
 ];
 
 const monthLabels = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun"];
 const monthData = [0, 0, 0, 0, 0, 0];
 const periods = ["Este mês", "Último trimestre", "Este ano"];
+
+const hasData = kpis.some((k) => k.raw > 0) || monthData.some((v) => v > 0);
+
+// ── PDF export ────────────────────────────────────────────────────────────────
+function exportFinanceiroPDF(period: string) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+
+  // Header bar
+  doc.setFillColor(22, 101, 52);
+  doc.rect(0, 0, pageW, 24, "F");
+
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.text("MedFlow — Relatório Financeiro", 14, 10);
+
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.text(`Exportado em ${new Date().toLocaleDateString("pt-BR")}`, 14, 17);
+  doc.text(`Período: ${period}`, pageW - 14, 17, { align: "right" });
+
+  // Title
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("Resumo Financeiro", 14, 36);
+
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100, 100, 100);
+  doc.text(`Período selecionado: ${period}`, 14, 43);
+
+  // KPI summary cards
+  const cards = kpis;
+  const cardW = (pageW - 28 - (cards.length - 1) * 4) / cards.length;
+  let sx = 14;
+  cards.forEach((k) => {
+    doc.setFillColor(245, 247, 250);
+    doc.roundedRect(sx, 50, cardW, 18, 2, 2, "F");
+    doc.setFontSize(7);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont("helvetica", "normal");
+    doc.text(k.label, sx + 3, 57);
+    doc.setFontSize(10);
+    doc.setTextColor(22, 101, 52);
+    doc.setFont("helvetica", "bold");
+    doc.text(k.value, sx + 3, 64);
+    sx += cardW + 4;
+  });
+
+  // Receita mensal table
+  autoTable(doc, {
+    head: [["Mês", "Receita (R$)"]],
+    body: monthLabels.map((m, i) => [m, monthData[i] > 0 ? `R$ ${monthData[i].toLocaleString("pt-BR", { minimumFractionDigits: 2 })}` : "—"]),
+    startY: 76,
+    theme: "striped",
+    headStyles: {
+      fillColor: [22, 101, 52],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      fontSize: 9,
+    },
+    bodyStyles: { fontSize: 8.5, textColor: [40, 40, 40] },
+    alternateRowStyles: { fillColor: [245, 250, 247] },
+    margin: { left: 14, right: 14 },
+  });
+
+  // Footer
+  const finalY = (doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY ?? 180;
+  doc.setFontSize(7.5);
+  doc.setTextColor(150, 150, 150);
+  doc.setFont("helvetica", "italic");
+  doc.text(
+    "Documento gerado automaticamente pelo MedFlow. Dados de uso exclusivo interno da clínica.",
+    14,
+    finalY + 10,
+  );
+
+  const filename = `medflow-financeiro-${period.toLowerCase().replace(/ /g, "-")}-${new Date().toISOString().slice(0, 10)}.pdf`;
+  doc.save(filename);
+}
 
 // 3D Bar component
 function Bar3D({
@@ -145,9 +229,18 @@ export default function Financeiro() {
             </button>
           ))}
         </div>
-        <Button variant="outline" data-testid="button-exportar">
-          <Download className="w-4 h-4 mr-2" /> Exportar
-        </Button>
+
+        <span title={!hasData ? "Sem dados para exportar ainda" : undefined} className="inline-flex">
+          <Button
+            variant="outline"
+            data-testid="button-exportar"
+            disabled={!hasData}
+            onClick={() => exportFinanceiroPDF(period)}
+            className={!hasData ? "cursor-not-allowed opacity-50" : ""}
+          >
+            <Download className="w-4 h-4 mr-2" /> Exportar
+          </Button>
+        </span>
       </div>
 
       {/* KPI Cards */}
@@ -161,7 +254,6 @@ export default function Financeiro() {
             </div>
             <p className="text-2xl font-bold text-foreground">{kpi.value}</p>
             <p className="text-sm text-muted-foreground mt-1">{kpi.label}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{kpi.change}</p>
           </div>
         ))}
       </div>
