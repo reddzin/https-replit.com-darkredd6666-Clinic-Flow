@@ -76,6 +76,7 @@ function Router() {
       <Route path="/cadastro" component={Cadastro} />
       <Route path="/cadastro/planos" component={CadastroPlanos} />
       <Route path="/cadastro/pagamento" component={CadastroPagamento} />
+      <Route path="/booking/:slug" component={Agendar} />
       <Route path="/agendar/:slug" component={Agendar} />
       <Route component={NotFound} />
     </Switch>

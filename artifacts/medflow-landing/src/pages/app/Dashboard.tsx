@@ -37,7 +37,7 @@ function BookingLinkCard() {
     const data = getClinicData();
     const s = data?.clinicSlug ?? "minha-clinica";
     const origin = window.location.origin;
-    return { slug: s, link: `${origin}/agendar/${s}`, url: `${origin}/agendar/${s}` };
+    return { slug: s, link: `${origin}/booking/${s}`, url: `${origin}/booking/${s}` };
   }, []);
 
   const handleCopy = async () => {
@@ -81,7 +81,7 @@ function BookingLinkCard() {
               Seu link de agendamento
             </p>
             <Link
-              href={`/agendar/${CLINIC_SLUG}`}
+              href={`/booking/${CLINIC_SLUG}`}
               className="flex items-center bg-muted/70 border border-border rounded-lg px-3 py-2 w-full max-w-sm hover:border-emerald-400 transition-colors group"
             >
               <span
