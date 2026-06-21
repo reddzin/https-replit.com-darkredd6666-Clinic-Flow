@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Activity, ArrowLeft } from "lucide-react";
+import { getSession, saveSession } from "@/lib/clinic";
 
 const formSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -22,8 +23,16 @@ export default function Login() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    localStorage.setItem("medflow_user", JSON.stringify({ email: values.email, token: "mock_token" }));
-    setLocation("/app");
+    // Merge login credentials into existing session — never overwrite other fields
+    saveSession({ email: values.email, token: "mock_token" });
+
+    // Route based on onboarding status persisted in storage
+    const session = getSession();
+    if (session?.onboarding_completed) {
+      setLocation("/app");
+    } else {
+      setLocation("/app/onboarding");
+    }
   }
 
   return (
