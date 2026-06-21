@@ -12,7 +12,6 @@ import {
   Settings,
   Activity,
   Bell,
-  Search,
   Menu,
   X,
   ChevronDown,
@@ -202,15 +201,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="hidden md:flex items-center gap-2 bg-muted/60 rounded-xl px-3 py-2 w-56">
-          <Search className="w-4 h-4 text-muted-foreground shrink-0" />
-          <input
-            placeholder="Buscar..."
-            className="bg-transparent text-sm outline-none w-full text-foreground placeholder:text-muted-foreground"
-            data-testid="input-search"
-          />
-        </div>
-
         <button
           className="relative p-2 rounded-xl hover:bg-muted text-muted-foreground"
           data-testid="button-notifications"
