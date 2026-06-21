@@ -25,7 +25,7 @@ const plans: {
   {
     id: "essencial",
     name: "Essencial",
-    price: "R$ 149",
+    price: "R$79",
     priceNote: "/mês",
     icon: Zap,
     color: "border-border",
@@ -40,7 +40,7 @@ const plans: {
   {
     id: "pro",
     name: "Pro",
-    price: "R$ 299",
+    price: "R$137",
     priceNote: "/mês",
     icon: Star,
     color: "border-primary",
@@ -59,7 +59,7 @@ const plans: {
   {
     id: "supreme",
     name: "Supreme",
-    price: "R$ 499",
+    price: "R$197",
     priceNote: "/mês",
     icon: Crown,
     color: "border-border",
