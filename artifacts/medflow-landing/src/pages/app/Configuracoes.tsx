@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,6 +15,7 @@ import {
   Plus,
   Check,
   Link2,
+  Clock,
 } from "lucide-react";
 import { getSession, saveSession, generateSlug } from "@/lib/clinic";
 
@@ -58,10 +59,10 @@ const notificacoes = [
 ];
 
 const integracoes = [
-  { name: "Nota Fiscal Eletrônica (NFe)", desc: "Emissão automática de NFS-e", connected: true, icon: "📄" },
-  { name: "TISS / Faturamento de Convênios", desc: "Envio de guias para operadoras", connected: true, icon: "🏥" },
-  { name: "WhatsApp Business", desc: "Mensagens automáticas via API oficial", connected: false, icon: "💬" },
-  { name: "Assinatura Digital ICP-Brasil", desc: "Prescrições e documentos com validade jurídica", connected: false, icon: "✍️" },
+  { name: "Nota Fiscal Eletrônica (NFe)", desc: "Emissão automática de NFS-e", icon: "📄" },
+  { name: "TISS / Faturamento de Convênios", desc: "Envio de guias para operadoras", icon: "🏥" },
+  { name: "WhatsApp Business", desc: "Mensagens automáticas via API oficial", icon: "💬" },
+  { name: "Assinatura Digital ICP-Brasil", desc: "Prescrições e documentos com validade jurídica", icon: "✍️" },
 ];
 
 export default function Configuracoes() {
@@ -69,14 +70,40 @@ export default function Configuracoes() {
   const [convAtivos, setConvAtivos] = useState(convenios.map(c => c.active));
   const [notifAtivos, setNotifAtivos] = useState(notificacoes.map(() => true));
 
-  // Clinic data from localStorage
   const session = getSession();
   const [clinicName, setClinicName] = useState(session?.clinicName ?? "");
   const [clinicPhone, setClinicPhone] = useState(session?.clinicPhone ?? "");
   const [clinicEmail, setClinicEmail] = useState(session?.email ?? "");
   const [clinicAddress, setClinicAddress] = useState(session?.clinicAddress ?? "");
   const [clinicSlug, setClinicSlug] = useState(session?.clinicSlug ?? "");
+  const [logoPreview, setLogoPreview] = useState<string | null>((session as any)?.logoUrl ?? null);
   const [savedClinic, setSavedClinic] = useState(false);
+  const [logoError, setLogoError] = useState("");
+
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  function handleLogoClick() {
+    logoInputRef.current?.click();
+  }
+
+  function handleLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 2 * 1024 * 1024) {
+      setLogoError("Arquivo deve ter no máximo 2 MB.");
+      e.target.value = "";
+      return;
+    }
+    setLogoError("");
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      setLogoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
 
   function handleSaveClinic() {
     const slugToSave = clinicSlug.trim() || generateSlug(clinicName);
@@ -86,14 +113,14 @@ export default function Configuracoes() {
       clinicPhone: clinicPhone.trim(),
       email: clinicEmail.trim(),
       clinicAddress: clinicAddress.trim(),
-    });
+      logoUrl: logoPreview ?? undefined,
+    } as any);
     setClinicSlug(slugToSave);
     setSavedClinic(true);
     setTimeout(() => setSavedClinic(false), 2500);
   }
 
   function handleSlugInput(val: string) {
-    // Allow only URL-safe characters
     setClinicSlug(val.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/--+/g, "-"));
   }
 
@@ -127,6 +154,8 @@ export default function Configuracoes() {
 
       {/* Tab Content */}
       <div className="flex-1 bg-background rounded-2xl border border-border shadow-sm p-6">
+
+        {/* ── CLÍNICA ── */}
         {activeTab === "clinica" && (
           <div className="space-y-6 max-w-lg">
             <h3 className="font-semibold text-foreground text-lg">Dados da Clínica</h3>
@@ -199,24 +228,49 @@ export default function Configuracoes() {
                   </p>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Apenas letras minúsculas, números e hífens. Ao salvar, o link de agendamento será atualizado automaticamente.
+                  Apenas letras minúsculas, números e hífens.
                 </p>
               </div>
 
+              {/* Logo upload */}
               <div className="space-y-1.5">
                 <Label>Logo da Clínica</Label>
-                <div className="flex items-center gap-4 p-4 border-2 border-dashed border-border rounded-xl hover:border-primary/40 transition-colors cursor-pointer">
-                  <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center">
-                    <Building className="w-6 h-6 text-muted-foreground" />
+                <input
+                  ref={logoInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg"
+                  className="hidden"
+                  onChange={handleLogoChange}
+                />
+                <div
+                  onClick={handleLogoClick}
+                  className="flex items-center gap-4 p-4 border-2 border-dashed border-border rounded-xl hover:border-primary/50 hover:bg-muted/30 transition-colors cursor-pointer"
+                >
+                  {logoPreview ? (
+                    <img
+                      src={logoPreview}
+                      alt="Logo da clínica"
+                      className="w-12 h-12 rounded-full object-cover border border-border shrink-0"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center shrink-0">
+                      <Building className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-foreground">
+                      {logoPreview ? "Clique para trocar o logo" : "Clique para enviar o logo"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">PNG, JPG até 2 MB</p>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">Clique para enviar o logo</p>
-                    <p className="text-xs text-muted-foreground">PNG, JPG até 2MB</p>
-                  </div>
-                  <Upload className="w-5 h-5 text-muted-foreground ml-auto" />
+                  <Upload className="w-5 h-5 text-muted-foreground ml-auto shrink-0" />
                 </div>
+                {logoError && (
+                  <p className="text-xs text-destructive font-medium">{logoError}</p>
+                )}
               </div>
             </div>
+
             <Button
               onClick={handleSaveClinic}
               className={`gap-2 transition-all ${savedClinic ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
@@ -227,6 +281,7 @@ export default function Configuracoes() {
           </div>
         )}
 
+        {/* ── USUÁRIOS ── */}
         {activeTab === "usuarios" && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
@@ -258,6 +313,7 @@ export default function Configuracoes() {
           </div>
         )}
 
+        {/* ── CONVÊNIOS ── */}
         {activeTab === "convenios" && (
           <div className="space-y-5">
             <div className="flex items-center justify-between">
@@ -287,6 +343,7 @@ export default function Configuracoes() {
           </div>
         )}
 
+        {/* ── NOTIFICAÇÕES ── */}
         {activeTab === "notificacoes" && (
           <div className="space-y-5">
             <h3 className="font-semibold text-foreground text-lg">Preferências de Notificação</h3>
@@ -308,38 +365,44 @@ export default function Configuracoes() {
           </div>
         )}
 
+        {/* ── INTEGRAÇÕES ── */}
         {activeTab === "integracoes" && (
           <div className="space-y-5">
-            <h3 className="font-semibold text-foreground text-lg">Integrações</h3>
+            <div>
+              <h3 className="font-semibold text-foreground text-lg">Integrações</h3>
+              <p className="text-sm text-muted-foreground mt-1">
+                Estas integrações estão sendo desenvolvidas e serão disponibilizadas em breve.
+              </p>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {integracoes.map((integ, i) => (
-                <div key={i} className={`p-5 rounded-xl border ${integ.connected ? "border-emerald-200 bg-emerald-50/50" : "border-border bg-background"}`}>
+                <div key={i} className="p-5 rounded-xl border border-border bg-background opacity-75">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="text-2xl mb-2">{integ.icon}</p>
                       <p className="text-sm font-semibold text-foreground">{integ.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{integ.desc}</p>
                     </div>
-                    <span className={`shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${
-                      integ.connected ? "bg-emerald-100 text-emerald-700" : "bg-muted text-muted-foreground"
-                    }`}>
-                      {integ.connected ? <CheckCircle2 className="w-3 h-3" /> : null}
-                      {integ.connected ? "Conectado" : "Disponível"}
+                    <span className="shrink-0 flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
+                      <Clock className="w-3 h-3" />
+                      Em breve
                     </span>
                   </div>
                   <Button
                     size="sm"
-                    variant={integ.connected ? "outline" : "default"}
+                    variant="outline"
                     className="mt-4 w-full"
+                    disabled
                     data-testid={`button-integ-${i}`}
                   >
-                    {integ.connected ? "Gerenciar" : "Conectar"}
+                    Em breve
                   </Button>
                 </div>
               ))}
             </div>
           </div>
         )}
+
       </div>
     </div>
   );
