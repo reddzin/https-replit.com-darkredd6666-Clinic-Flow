@@ -5,8 +5,9 @@ import { useLocation } from "wouter";
 
 const plans = [
   {
-    name: "Basic",
-    price: "R$ 199",
+    name: "Essencial",
+    price: "R$79",
+    badge: "Limitado",
     description: "Ideal para consultórios individuais iniciando a digitalização.",
     features: [
       "1 Profissional de Saúde",
@@ -19,12 +20,13 @@ const plans = [
     buttonVariant: "outline" as const,
   },
   {
-    name: "Professional",
-    price: "R$ 499",
+    name: "Pro",
+    price: "R$137",
+    badge: "Mais popular",
     description: "A solução completa para clínicas em crescimento.",
     features: [
       "Até 5 Profissionais de Saúde",
-      "Tudo do plano Basic",
+      "Tudo do plano Essencial",
       "Faturamento TISS/TUSS",
       "Telemedicina Integrada",
       "Lembretes por WhatsApp",
@@ -34,12 +36,13 @@ const plans = [
     buttonVariant: "default" as const,
   },
   {
-    name: "Enterprise",
-    price: "Sob Consulta",
+    name: "Supreme",
+    price: "R$197",
+    badge: "Premium",
     description: "Para redes de clínicas e operações de grande volume.",
     features: [
       "Profissionais Ilimitados",
-      "Tudo do plano Professional",
+      "Tudo do plano Pro",
       "Múltiplas Unidades",
       "API para Integrações",
       "Gerente de Conta Dedicado",
@@ -79,20 +82,16 @@ export function Pricing() {
                   : "border-border shadow-sm"
               }`}
             >
-              {plan.popular && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium tracking-wide">
-                  Mais Escolhido
-                </div>
-              )}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium tracking-wide">
+                {plan.badge}
+              </div>
 
               <div className="mb-8">
                 <h3 className="text-2xl font-bold mb-2">{plan.name}</h3>
                 <p className="text-muted-foreground text-sm min-h-[40px]">{plan.description}</p>
                 <div className="mt-6 flex items-baseline gap-1">
                   <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                  {plan.name !== "Enterprise" && (
-                    <span className="text-muted-foreground">/mês</span>
-                  )}
+                  <span className="text-muted-foreground">/mês</span>
                 </div>
               </div>
 
