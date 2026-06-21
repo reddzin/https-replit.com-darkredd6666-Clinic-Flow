@@ -14,9 +14,9 @@ export function CTA() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-4xl md:text-5xl font-extrabold mb-6"
+            className="text-4xl md:text-5xl font-black mb-6"
           >
-            Eleve o padrão da sua clínica hoje mesmo
+            Quanto está custando não ter o MedFlow?
           </motion.h2>
 
           <motion.p
@@ -26,7 +26,7 @@ export function CTA() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-xl md:text-2xl opacity-90 mb-10 max-w-2xl mx-auto"
           >
-            Junte-se a milhares de profissionais que já transformaram a gestão de suas clínicas com o MedFlow.
+            Cada falta não evitada, cada guia com erro, cada hora perdida em planilha é dinheiro saindo da sua clínica. Nossa equipe implanta tudo em menos de 48 horas.
           </motion.p>
 
           <motion.div

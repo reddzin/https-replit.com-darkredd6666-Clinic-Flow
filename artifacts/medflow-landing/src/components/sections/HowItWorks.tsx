@@ -3,23 +3,23 @@ import { motion } from "framer-motion";
 const steps = [
   {
     number: "01",
-    title: "Agendamento Inteligente",
-    description: "O paciente agenda a consulta online ou via recepção. Lembretes são enviados automaticamente via WhatsApp."
+    title: "Agendamento Online",
+    description: "Paciente escolhe horário, médico confirma. Ninguém precisa ligar."
   },
   {
     number: "02",
-    title: "Recepção Eficiente",
-    description: "Check-in rápido na clínica com verificação de elegibilidade de convênios em tempo real."
+    title: "Recepção Sem Caos",
+    description: "Check-in digital, ficha atualizada, paciente na sala certa na hora certa."
   },
   {
     number: "03",
-    title: "Atendimento de Excelência",
-    description: "O médico acessa o prontuário completo, prescreve medicamentos digitais e solicita exames."
+    title: "Consulta Completa",
+    description: "Prontuário, prescrição e solicitação de exames em uma tela só."
   },
   {
     number: "04",
     title: "Faturamento Automático",
-    description: "Guias geradas instantaneamente, com faturamento integrado e relatórios financeiros claros."
+    description: "Guias geradas, repasses calculados, caixa fechado. Sem retrabalho."
   }
 ];
 
@@ -28,9 +28,9 @@ export function HowItWorks() {
     <section id="como-funciona" className="py-28 bg-[#166534] scroll-mt-20">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">O fluxo perfeito para sua clínica</h2>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 text-white">Do agendamento ao faturamento em 4 passos</h2>
           <p className="text-lg text-white/70">
-            Veja como o MedFlow transforma a rotina desde a marcação da consulta até o faturamento.
+            A rotina que consome horas hoje vira minutos com o MedFlow.
           </p>
         </div>
 

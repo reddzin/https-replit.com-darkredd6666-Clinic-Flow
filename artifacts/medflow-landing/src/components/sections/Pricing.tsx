@@ -10,7 +10,7 @@ const plans = [
     badge: "Limitado",
     badgeStyle: "bg-[#6b7280] text-white",
     borderStyle: "border border-[#e5e7eb]",
-    description: "Ideal para consultórios individuais iniciando a digitalização.",
+    description: "Para consultórios individuais que querem profissionalizar o atendimento.",
     features: [
       "1 Profissional de Saúde",
       "Agendamento Online",
@@ -27,7 +27,7 @@ const plans = [
     badge: "Mais popular",
     badgeStyle: "bg-[#16a34a] text-white",
     borderStyle: "border-2 border-[#16a34a] shadow-lg shadow-[#16a34a]/10",
-    description: "A solução completa para clínicas em crescimento.",
+    description: "Para clínicas em crescimento que precisam de controle total.",
     features: [
       "Até 5 Profissionais de Saúde",
       "Tudo do plano Essencial",
@@ -45,7 +45,7 @@ const plans = [
     badge: "Premium",
     badgeStyle: "bg-[#166534] text-white",
     borderStyle: "border-2 border-[#166534] shadow-lg shadow-[#166534]/10",
-    description: "Para redes de clínicas e operações de grande volume.",
+    description: "Para redes e operações de grande volume.",
     features: [
       "Profissionais Ilimitados",
       "Tudo do plano Pro",
@@ -66,11 +66,11 @@ export function Pricing() {
     <section id="precos" className="py-24 bg-white scroll-mt-20">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#111827]">
-            Planos que acompanham seu crescimento
+          <h2 className="text-4xl md:text-5xl font-black mb-4 text-[#111827]">
+            Planos que crescem com você
           </h2>
           <p className="text-lg text-[#6b7280]">
-            Sem taxas de adesão, cancele quando quiser. Escolha o plano ideal para a sua estrutura.
+            Sem fidelidade, sem taxa de adesão. Cancele quando quiser.
           </p>
         </div>
 
@@ -89,10 +89,10 @@ export function Pricing() {
               </div>
 
               <div className="mb-8">
-                <h3 className="text-2xl font-extrabold mb-2 text-[#111827]">{plan.name}</h3>
+                <h3 className="text-2xl font-black mb-2 text-[#111827]">{plan.name}</h3>
                 <p className="text-[#6b7280] text-sm min-h-[40px]">{plan.description}</p>
                 <div className="mt-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-[#166534]">{plan.price}</span>
+                  <span className="text-4xl font-black text-[#166534]">{plan.price}</span>
                   <span className="text-[#6b7280]">/mês</span>
                 </div>
               </div>

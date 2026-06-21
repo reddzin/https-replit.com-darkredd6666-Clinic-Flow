@@ -6,9 +6,9 @@ export function Testimonials() {
     <section id="depoimentos" className="py-24 bg-[#f0fdf4] scroll-mt-20">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-4 text-[#111827]">A escolha dos líderes em saúde</h2>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 text-[#111827]">Clínicas que decidiram crescer com o MedFlow</h2>
           <p className="text-lg text-[#6b7280]">
-            Descubra por que as melhores clínicas do país confiam no MedFlow.
+            Seja o próximo caso de sucesso.
           </p>
         </div>
 

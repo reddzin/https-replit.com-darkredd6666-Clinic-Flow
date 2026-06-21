@@ -1,0 +1,59 @@
+Substitua todos os textos da landing page exatamente por esses abaixo. Não mude nada visual, só os textos:
+Badge topo: "Plataforma líder em gestão clínica"
+Headline: "Sua clínica no controle. Seus pacientes satisfeitos."
+Subheadline: "Chega de planilha, WhatsApp bagunçado e faturamento na mão. O MedFlow automatiza tudo — do agendamento ao repasse — para você focar no que importa: atender bem."
+Botões: "Começar Grátis" / "Ver Demonstração"
+Badges: "Sem cartão de crédito" / "Ativo em menos de 48h"
+Stats: "+2.400 clínicas ativas" / "98% de satisfação"
+
+Seção features título: "Tudo que sua clínica precisa. Em um lugar só."
+
+Subtítulo: "Pare de pagar por 5 sistemas diferentes. O MedFlow substitui todos."
+Agendamento Inteligente: "Pacientes agendam online 24h. Lembretes automáticos cortam faltas em até 40%."
+Prontuário Eletrônico: "Histórico completo do paciente em segundos. Modelos por especialidade prontos para usar."
+Faturamento Simplificado: "Guias TISS, notas fiscais e fluxo de caixa no automático. Zero erro manual."
+Telemedicina Integrada: "Consultas por vídeo com qualidade presencial, integradas ao prontuário em tempo real."
+Dashboard de Análises: "Saiba exatamente quanto sua clínica fatura, quais horários rendem mais e onde está perdendo dinheiro."
+Notificações Automáticas: "WhatsApp, SMS e e-mail disparados na hora certa, sem a recepcionista precisar lembrar."
+
+Seção telemedicina título: "Atenda mais sem ampliar o espaço físico"
+
+Texto: "Com a telemedicina do MedFlow, sua clínica funciona onde o paciente estiver. Segura, estável e integrada ao prontuário — sem instalar nada."
+Bullets: "Vídeo HD sem travamento", "Compartilhe tela e laudos na consulta", "Prescrição digital com validade ICP-Brasil", "Gravação com consentimento do paciente"
+
+Seção fluxo título: "Do agendamento ao faturamento em 4 passos"
+
+Subtítulo: "A rotina que consome horas hoje vira minutos com o MedFlow."
+01: "Agendamento Online" — "Paciente escolhe horário, médico confirma. Ninguém precisa ligar."
+
+02: "Recepção Sem Caos" — "Check-in digital, ficha atualizada, paciente na sala certa na hora certa."
+
+03: "Consulta Completa" — "Prontuário, prescrição e solicitação de exames em uma tela só."
+
+04: "Faturamento Automático" — "Guias geradas, repasses calculados, caixa fechado. Sem retrabalho."
+
+Banner CTA: "Quanto está custando não ter o MedFlow?"
+
+Subtexto: "Cada falta não evitada, cada guia com erro, cada hora perdida em planilha é dinheiro saindo da sua clínica. Nossa equipe implanta tudo em menos de 48 horas."
+
+Seção depoimentos título: "Clínicas que decidiram crescer com o MedFlow"
+
+Subtítulo: "Seja o próximo caso de sucesso."
+
+Seção planos título: "Planos que crescem com você"
+
+Subtítulo: "Sem fidelidade, sem taxa de adesão. Cancele quando quiser."
+Essencial descrição: "Para consultórios individuais que querem profissionalizar o atendimento."
+
+Pro descrição: "Para clínicas em crescimento que precisam de controle total."
+
+Supreme descrição: "Para redes e operações de grande volume."
+
+FAQ título: "Dúvidas frequentes"
+
+Subtítulo: "Respondemos o que você precisa saber antes de começar."
+
+CTA final título: "Sua clínica merece funcionar sem estresse"
+
+Subtexto: "Mais de 2.400 clínicas já automatizaram a gestão com o MedFlow. Comece hoje e veja a diferença na primeira semana."
+Rodapé tagline: "Tecnologia feita para quem cuida de pessoas."

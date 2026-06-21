@@ -4,32 +4,32 @@ import { Calendar, FileText, CreditCard, Video, BarChart3, Bell } from "lucide-r
 const features = [
   {
     title: "Agendamento Inteligente",
-    description: "Reduza faltas com lembretes automáticos e permita que pacientes agendem consultas online 24/7.",
+    description: "Pacientes agendam online 24h. Lembretes automáticos cortam faltas em até 40%.",
     icon: Calendar,
   },
   {
     title: "Prontuário Eletrônico",
-    description: "Acesse o histórico completo do paciente em segundos, com modelos personalizáveis por especialidade.",
+    description: "Histórico completo do paciente em segundos. Modelos por especialidade prontos para usar.",
     icon: FileText,
   },
   {
     title: "Faturamento Simplificado",
-    description: "Automatize emissão de guias TISS/TUSS, notas fiscais e controle o fluxo de caixa da clínica.",
+    description: "Guias TISS, notas fiscais e fluxo de caixa no automático. Zero erro manual.",
     icon: CreditCard,
   },
   {
     title: "Telemedicina Integrada",
-    description: "Realize consultas por vídeo com segurança e qualidade, tudo dentro da mesma plataforma.",
+    description: "Consultas por vídeo com qualidade presencial, integradas ao prontuário em tempo real.",
     icon: Video,
   },
   {
     title: "Dashboard de Análises",
-    description: "Acompanhe métricas de desempenho, taxas de ocupação e receitas em tempo real.",
+    description: "Saiba exatamente quanto sua clínica fatura, quais horários rendem mais e onde está perdendo dinheiro.",
     icon: BarChart3,
   },
   {
     title: "Notificações Automáticas",
-    description: "Mantenha sua equipe e pacientes atualizados via WhatsApp, SMS ou e-mail.",
+    description: "WhatsApp, SMS e e-mail disparados na hora certa, sem a recepcionista precisar lembrar.",
     icon: Bell,
   }
 ];
@@ -39,9 +39,9 @@ export function Features() {
     <section id="funcionalidades" className="py-28 bg-[#f0fdf4] relative overflow-hidden scroll-mt-20">
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center max-w-3xl mx-auto mb-20">
-          <h2 className="text-4xl md:text-5xl font-black mb-4 text-[#111827]">Tudo o que sua clínica precisa</h2>
+          <h2 className="text-4xl md:text-5xl font-black mb-4 text-[#111827]">Tudo que sua clínica precisa. Em um lugar só.</h2>
           <p className="text-lg text-[#6b7280]">
-            Uma plataforma unificada projetada para otimizar cada etapa da jornada do paciente e da gestão clínica.
+            Pare de pagar por 5 sistemas diferentes. O MedFlow substitui todos.
           </p>
         </div>
 
@@ -73,12 +73,12 @@ export function Features() {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <h3 className="text-3xl font-black mb-6 text-[#111827]">Atendimento sem fronteiras com a Telemedicina MedFlow</h3>
+            <h3 className="text-3xl font-black mb-6 text-[#111827]">Atenda mais sem ampliar o espaço físico</h3>
             <p className="text-lg text-[#6b7280] mb-8">
-              Expanda o alcance da sua clínica oferecendo consultas virtuais com a mesma qualidade do atendimento presencial. Nossa sala virtual é segura, estável e totalmente integrada ao prontuário.
+              Com a telemedicina do MedFlow, sua clínica funciona onde o paciente estiver. Segura, estável e integrada ao prontuário — sem instalar nada.
             </p>
             <ul className="space-y-4">
-              {['Vídeo em alta definição (HD)', 'Compartilhamento de tela e exames', 'Prescrição digital com assinatura ICP-Brasil', 'Gravação opcional com consentimento'].map((item, i) => (
+              {['Vídeo HD sem travamento', 'Compartilhe tela e laudos na consulta', 'Prescrição digital com validade ICP-Brasil', 'Gravação com consentimento do paciente'].map((item, i) => (
                 <li key={i} className="flex items-center gap-3">
                   <div className="w-6 h-6 rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0">
                     <div className="w-2 h-2 rounded-full bg-[#166534]" />

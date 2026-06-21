@@ -20,7 +20,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#dcfce7] font-medium text-sm mb-8 text-[#166534]"
             >
               <span className="flex h-2 w-2 rounded-full bg-[#16a34a]"></span>
-              A nova era da gestão clínica
+              Plataforma líder em gestão clínica
             </motion.div>
 
             <motion.h1
@@ -29,9 +29,9 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight text-[#166534] mb-6 leading-[1.05]"
             >
-              Gestão de Clínicas, <br />
+              Sua clínica no controle. <br />
               <span className="text-[#16a34a]">
-                Elevada à Perfeição.
+                Seus pacientes satisfeitos.
               </span>
             </motion.h1>
 
@@ -41,8 +41,7 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg md:text-xl text-[#6b7280] mb-10 max-w-xl leading-relaxed"
             >
-              O MedFlow centraliza agendamentos, prontuários e faturamento em uma interface premium e intuitiva.
-              Projetado para clínicas que exigem o melhor.
+              Chega de planilha, WhatsApp bagunçado e faturamento na mão. O MedFlow automatiza tudo — do agendamento ao repasse — para você focar no que importa: atender bem.
             </motion.p>
 
             <motion.div
@@ -57,7 +56,7 @@ export function Hero() {
                 onClick={() => setLocation("/cadastro")}
                 data-testid="button-hero-start"
               >
-                Começar Agora
+                Começar Grátis
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               <Button
@@ -66,7 +65,7 @@ export function Hero() {
                 className="h-14 px-10 text-base rounded-full border-2 border-[#166534] text-[#166534] bg-transparent hover:bg-[#f0fdf4] font-bold"
                 onClick={() => setLocation("/contato")}
               >
-                Falar com Consultor
+                Ver Demonstração
               </Button>
             </motion.div>
 
@@ -80,7 +79,7 @@ export function Hero() {
                 <CheckCircle2 className="h-4 w-4 text-[#16a34a]" /> Sem cartão de crédito
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#16a34a]" /> Implantação em 48h
+                <CheckCircle2 className="h-4 w-4 text-[#16a34a]" /> Ativo em menos de 48h
               </div>
             </motion.div>
           </div>
@@ -98,14 +97,13 @@ export function Hero() {
               alt="Médica profissional"
               className="w-full h-[600px] object-cover object-top rounded-3xl shadow-[0_4px_24px_rgba(0,0,0,0.10)] border border-[#e5e7eb]"
             />
-            {/* floating stat card */}
             <div className="absolute -bottom-6 -left-8 bg-white rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.10)] border border-[#e5e7eb] px-6 py-4">
               <p className="text-3xl font-black text-[#166534]">+2.400</p>
               <p className="text-sm text-[#6b7280] font-medium">clínicas ativas</p>
             </div>
             <div className="absolute -top-6 -right-6 bg-[#166534] rounded-2xl px-6 py-4">
               <p className="text-3xl font-black text-white">98%</p>
-              <p className="text-sm text-white/80 font-medium">satisfação</p>
+              <p className="text-sm text-white/80 font-medium">de satisfação</p>
             </div>
           </motion.div>
 

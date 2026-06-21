@@ -13,7 +13,7 @@ export function Footer() {
               <span className="font-bold text-xl tracking-tight text-white">MedFlow</span>
             </Link>
             <p className="text-white/70 text-sm leading-relaxed mb-6">
-              Elevando o padrão da gestão clínica no Brasil. O sistema premium para clínicas que buscam excelência.
+              Tecnologia feita para quem cuida de pessoas.
             </p>
             <div className="flex gap-4">
               <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
