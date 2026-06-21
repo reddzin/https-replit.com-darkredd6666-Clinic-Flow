@@ -1,5 +1,4 @@
 uploads = []
-outputs = []
 
 [[generated]]
 id = "ga1YH9GbUsDAM0MnagXNG"
@@ -18,3 +17,9 @@ id = "wE5H_448uKzlss0mf3hbx"
 uri = "file://artifacts/medflow-landing/public/feature-ehr.png"
 type = "image"
 title = "Electronic health record mockup"
+
+[[outputs]]
+id = "swOgG3XEa9VwLt_J7QwyR"
+uri = "file://medflow-convenios-2026-06-21.pdf"
+type = "pdf"
+title = "Relatório — Análise de Convênios (Jan–Jun 2026)"
