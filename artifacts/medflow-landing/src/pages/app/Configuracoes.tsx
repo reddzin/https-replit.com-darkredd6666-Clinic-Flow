@@ -132,6 +132,7 @@ export default function Configuracoes() {
 
   function handleSaveClinic() {
     const slugToSave = clinicSlug.trim() || generateSlug(clinicName);
+    const current = getSession();
     try {
       saveSession({
         clinicName: clinicName.trim(),
@@ -148,6 +149,28 @@ export default function Configuracoes() {
     setClinicSlug(slugToSave);
     setSavedClinic(true);
     setTimeout(() => setSavedClinic(false), 2500);
+
+    // Sync to the database so the booking link works from any device
+    const ownerEmail = current?.email ?? clinicEmail.trim();
+    if (ownerEmail) {
+      fetch("/api/clinics/by-owner", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ownerEmail,
+          slug: slugToSave,
+          clinicName: clinicName.trim(),
+          clinicPhone: clinicPhone.trim(),
+          clinicAddress: clinicAddress.trim(),
+          clinicCity: current?.clinicCity,
+          clinicState: current?.clinicState,
+          clinicType: current?.clinicType,
+          businessHours: current?.businessHours,
+          doctors: current?.doctors,
+          appointmentDuration: current?.appointmentDuration,
+        }),
+      }).catch(console.error);
+    }
   }
 
   function handleSlugInput(val: string) {

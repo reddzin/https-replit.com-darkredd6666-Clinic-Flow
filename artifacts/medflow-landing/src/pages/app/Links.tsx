@@ -76,9 +76,32 @@ export default function Links() {
 
   const handleSave = useCallback(() => {
     if (!newSlug || newSlug.length < 3) return;
+    const current = getClinicData();
     saveSession({ clinicSlug: newSlug });
     setSaved((v) => !v);
     setShowModal(false);
+
+    // Sync to the database so the booking link works from any device
+    const ownerEmail = current?.email;
+    if (ownerEmail) {
+      fetch("/api/clinics/by-owner", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ownerEmail,
+          slug: newSlug,
+          clinicName: current?.clinicName,
+          clinicPhone: current?.clinicPhone,
+          clinicAddress: current?.clinicAddress,
+          clinicCity: current?.clinicCity,
+          clinicState: current?.clinicState,
+          clinicType: current?.clinicType,
+          businessHours: current?.businessHours,
+          doctors: current?.doctors,
+          appointmentDuration: current?.appointmentDuration,
+        }),
+      }).catch(console.error);
+    }
   }, [newSlug]);
 
   return (

@@ -84,10 +84,49 @@ interface AppLayoutProps {
   children: ReactNode;
 }
 
+// One-time sync: if the user has a completed session in localStorage but no DB
+// record yet (e.g. they onboarded before the DB tables existed), create it now.
+function useSyncClinicToDB() {
+  useEffect(() => {
+    const session = getClinicData();
+    if (!session?.onboarding_completed || !session.clinicSlug || !session.email) return;
+
+    const slug = session.clinicSlug.trim().toLowerCase();
+    // Check if the record already exists; if not, create it via POST
+    fetch(`/api/clinics/${encodeURIComponent(slug)}`)
+      .then((res) => {
+        if (res.status === 404) {
+          // Record missing — create it
+          fetch("/api/clinics", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              slug,
+              clinicName: session.clinicName,
+              clinicType: session.clinicType,
+              clinicAddress: session.clinicAddress,
+              clinicPhone: session.clinicPhone,
+              clinicCity: session.clinicCity,
+              clinicState: session.clinicState,
+              businessHours: session.businessHours,
+              doctors: session.doctors,
+              appointmentDuration: session.appointmentDuration,
+              ownerEmail: session.email,
+            }),
+          }).catch(console.error);
+        }
+      })
+      .catch(console.error);
+  // Run once on mount
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+}
+
 export default function AppLayout({ children }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const clinic = useClinic();
+  useSyncClinicToDB();
 
   const pageTitle = pageTitles[location] ?? "MedFlow";
 
