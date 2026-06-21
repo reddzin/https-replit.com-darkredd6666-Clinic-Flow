@@ -20,6 +20,7 @@ import {
   User,
   UsersRound,
   Star,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getClinicData } from "@/lib/clinic";
@@ -52,6 +53,7 @@ const pageTitles: Record<string, string> = {
   "/app/financeiro": "Financeiro",
   "/app/relatorios": "Relatórios",
   "/app/configuracoes": "Configurações",
+  "/app/avaliar-medflow": "Avaliar o MedFlow",
 };
 
 // Read clinic info from localStorage once at mount
@@ -183,10 +185,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
               <ChevronDown className="w-4 h-4 text-muted-foreground hidden md:block" />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
+          <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem onClick={() => setLocation("/app/configuracoes")}>
               <User className="w-4 h-4 mr-2" />
               Meu Perfil
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => setLocation("/app/avaliar-medflow")}>
+              <Sparkles className="w-4 h-4 mr-2 text-amber-500" />
+              Avaliar o MedFlow
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem

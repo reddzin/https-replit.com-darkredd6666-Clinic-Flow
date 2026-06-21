@@ -10,6 +10,7 @@ import CadastroPlanos from "@/pages/CadastroPlanos";
 import CadastroPagamento from "@/pages/CadastroPagamento";
 import Agendar from "@/pages/Agendar";
 import Review from "@/pages/Review";
+import AvaliarMedFlow from "@/pages/app/AvaliarMedFlow";
 import Onboarding from "@/pages/app/Onboarding";
 import AppLayout from "@/pages/app/AppLayout";
 import Dashboard from "@/pages/app/Dashboard";
@@ -52,6 +53,7 @@ function ProtectedApp() {
         <Route path="/app/financeiro" component={Financeiro} />
         <Route path="/app/relatorios" component={Relatorios} />
         <Route path="/app/configuracoes" component={Configuracoes} />
+        <Route path="/app/avaliar-medflow" component={AvaliarMedFlow} />
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
