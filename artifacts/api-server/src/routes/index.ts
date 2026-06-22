@@ -5,6 +5,8 @@ import clinicsRouter from "./clinics";
 import reviewsRouter from "./reviews";
 import appReviewsRouter from "./app-reviews";
 import patientsRouter from "./patients";
+import clinicUsersRouter from "./clinic-users";
+import clinicConveniosRouter from "./clinic-convenios";
 
 const router: IRouter = Router();
 
@@ -14,5 +16,7 @@ router.use(clinicsRouter);
 router.use(reviewsRouter);
 router.use(appReviewsRouter);
 router.use(patientsRouter);
+router.use(clinicUsersRouter);
+router.use(clinicConveniosRouter);
 
 export default router;
