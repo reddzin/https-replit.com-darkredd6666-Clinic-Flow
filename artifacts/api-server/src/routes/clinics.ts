@@ -4,6 +4,30 @@ import { eq } from "drizzle-orm";
 
 const clinicsRouter = Router();
 
+// GET /api/clinics/by-owner?email=... — look up clinic by owner email (used on re-login)
+clinicsRouter.get("/clinics/by-owner", async (req: Request, res: Response) => {
+  try {
+    const email = (req.query.email as string ?? "").trim().toLowerCase();
+    if (!email) {
+      res.status(400).json({ error: "email query param required" });
+      return;
+    }
+    const [clinic] = await db
+      .select()
+      .from(clinicsTable)
+      .where(eq(clinicsTable.ownerEmail, email))
+      .limit(1);
+
+    if (!clinic) {
+      res.status(404).json({ error: "No clinic found for this owner" });
+      return;
+    }
+    res.json(clinic);
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 clinicsRouter.get("/clinics/:slug", async (req: Request, res: Response) => {
   try {
     const slug = (req.params.slug ?? "").trim().toLowerCase();

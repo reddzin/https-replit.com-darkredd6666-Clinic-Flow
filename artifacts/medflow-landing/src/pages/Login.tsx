@@ -37,19 +37,48 @@ export default function Login() {
     defaultValues: { email: "", password: "" },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    // Save minimal auth first
     saveSession({ email: values.email, token: "mock_token" });
 
     if (values.email === ADMIN_EMAIL) {
+      // For admin, still try to restore clinic data
+      await restoreClinicSession(values.email);
       setShowAdminChoice(true);
       return;
     }
+
+    await restoreClinicSession(values.email);
 
     const session = getSession();
     if (session?.onboarding_completed) {
       setLocation("/app");
     } else {
       setLocation("/app/onboarding");
+    }
+  }
+
+  async function restoreClinicSession(email: string) {
+    try {
+      const res = await fetch(`/api/clinics/by-owner?email=${encodeURIComponent(email.toLowerCase())}`);
+      if (!res.ok) return; // No clinic yet — onboarding pending
+      const clinic = await res.json();
+      // Restore full clinic session from DB so onboarding_completed survives logout/re-login
+      saveSession({
+        clinicName: clinic.clinicName ?? "",
+        clinicSlug: clinic.slug ?? "",
+        clinicType: clinic.clinicType ?? undefined,
+        clinicAddress: clinic.clinicAddress ?? undefined,
+        clinicPhone: clinic.clinicPhone ?? undefined,
+        clinicCity: clinic.clinicCity ?? undefined,
+        clinicState: clinic.clinicState ?? undefined,
+        businessHours: clinic.businessHours ?? undefined,
+        doctors: clinic.doctors ?? undefined,
+        appointmentDuration: clinic.appointmentDuration ?? undefined,
+        onboarding_completed: true,
+      });
+    } catch {
+      // Network error — leave session as-is; user will hit onboarding
     }
   }
 

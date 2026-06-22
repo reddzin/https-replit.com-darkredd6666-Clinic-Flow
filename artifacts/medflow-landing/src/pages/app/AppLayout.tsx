@@ -130,8 +130,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pageTitle = pageTitles[location] ?? "MedFlow";
 
   const handleLogout = () => {
-    localStorage.removeItem("medflow_user");
-    setLocation("/");
+    // clearSession removes only the auth token from localStorage — clinic data in DB is untouched
+    import("@/lib/clinic").then(({ clearSession }) => clearSession());
+    setLocation("/entrar");
   };
 
   const SidebarContent = () => (
