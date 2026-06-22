@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Mail, Lock, User, Phone, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { savePatientSession } from "@/lib/patient";
+import { savePatientSession, getPatientSession } from "@/lib/patient";
 
 type Mode = "login" | "register";
 
 export default function PacienteLogin() {
   const [, setLocation] = useLocation();
   const [mode, setMode] = useState<Mode>("login");
+
+  useEffect(() => {
+    const session = getPatientSession();
+    if (session?.token) {
+      setLocation("/paciente/dashboard");
+    }
+  }, [setLocation]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");

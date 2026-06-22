@@ -2,6 +2,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { MedFlowLogo } from "@/components/MedFlowLogo";
+import { User } from "lucide-react";
 
 export function Header() {
   const [, setLocation] = useLocation();
@@ -14,6 +15,14 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setLocation("/paciente/login")}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[#166534] transition-colors px-3 py-2 rounded-lg hover:bg-[#f0fdf4]"
+            data-testid="button-header-paciente"
+          >
+            <User className="w-3.5 h-3.5" />
+            Sou paciente
+          </button>
           <Button
             variant="outline"
             className="px-6 border-[#166534] text-[#166534] hover:bg-[#f0fdf4]"
