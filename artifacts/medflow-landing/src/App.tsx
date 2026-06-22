@@ -82,6 +82,14 @@ function Router() {
     return <Admin />;
   }
 
+  // If the user is already logged in and lands on the root, send to dashboard
+  const rootSession = getSession();
+  if (location === "/") {
+    if (rootSession?.email && rootSession?.token && rootSession?.onboarding_completed) {
+      return <Redirect to="/app" />;
+    }
+  }
+
   return (
     <Switch>
       <Route path="/" component={Home} />

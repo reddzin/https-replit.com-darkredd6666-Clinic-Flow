@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -20,6 +20,17 @@ const formSchema = z.object({
 export default function Login() {
   const [, setLocation] = useLocation();
   const [showAdminChoice, setShowAdminChoice] = useState(false);
+
+  useEffect(() => {
+    const session = getSession();
+    if (session?.email && session?.token) {
+      if (session.onboarding_completed) {
+        setLocation("/app");
+      } else {
+        setLocation("/app/onboarding");
+      }
+    }
+  }, [setLocation]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

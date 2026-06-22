@@ -56,21 +56,30 @@ export interface ClinicSession {
 }
 
 const STORAGE_KEY = "medflow_user";
+const SESSION_DURATION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+type StoredSession = ClinicSession & { expiresAt?: number };
 
 export function getSession(): ClinicSession | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as ClinicSession;
+    const parsed = JSON.parse(raw) as StoredSession;
+    if (parsed.expiresAt && Date.now() > parsed.expiresAt) {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
 }
 
 export function saveSession(data: Partial<ClinicSession>): void {
-  const current = getSession() ?? ({} as ClinicSession);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...data }));
-  // Notify same-tab listeners (storage event only fires in other tabs)
+  const raw = localStorage.getItem(STORAGE_KEY);
+  const current: StoredSession = raw ? (JSON.parse(raw) as StoredSession) : ({} as StoredSession);
+  const expiresAt = current.expiresAt ?? Date.now() + SESSION_DURATION_MS;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...current, ...data, expiresAt }));
   window.dispatchEvent(new Event("medflow:session-updated"));
 }
 
