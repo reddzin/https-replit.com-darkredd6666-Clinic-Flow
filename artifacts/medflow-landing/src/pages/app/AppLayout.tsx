@@ -23,7 +23,7 @@ import {
   Link2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getClinicData } from "@/lib/clinic";
+import { getClinicData, clearSession } from "@/lib/clinic";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -130,8 +130,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const pageTitle = pageTitles[location] ?? "MedFlow";
 
   const handleLogout = () => {
-    // clearSession removes only the auth token from localStorage — clinic data in DB is untouched
-    import("@/lib/clinic").then(({ clearSession }) => clearSession());
+    clearSession();
     setLocation("/entrar");
   };
 
