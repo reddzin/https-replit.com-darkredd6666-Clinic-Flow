@@ -46,9 +46,9 @@ function ProtectedApp() {
   const [sub, setSub] = useState<SubStatus | null>(null);
   const [subLoading, setSubLoading] = useState(true);
 
-  const checkSub = useCallback(async () => {
+  const checkSub = useCallback(async (isInitial = false) => {
     if (!session?.email) return;
-    setSubLoading(true);
+    if (isInitial) setSubLoading(true);
     try {
       const res = await fetch(`/api/cakto/subscription?email=${encodeURIComponent(session.email)}`);
       if (res.ok) {
@@ -56,17 +56,20 @@ function ProtectedApp() {
         setSub(data);
       } else {
         // On API error, grant access so we don't lock out users due to infra issues
-        setSub({ canAccess: true, status: "unknown", paidUntil: null });
+        if (isInitial) setSub({ canAccess: true, status: "unknown", paidUntil: null });
       }
     } catch {
-      setSub({ canAccess: true, status: "unknown", paidUntil: null });
+      if (isInitial) setSub({ canAccess: true, status: "unknown", paidUntil: null });
     } finally {
-      setSubLoading(false);
+      if (isInitial) setSubLoading(false);
     }
   }, [session?.email]);
 
   useEffect(() => {
-    checkSub();
+    checkSub(true);
+    // Poll every 3 minutes — detects cancellation/failure while user is already logged in
+    const interval = setInterval(() => checkSub(false), 3 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [checkSub]);
 
   // No session at all → login
