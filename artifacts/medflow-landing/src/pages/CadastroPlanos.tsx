@@ -92,7 +92,7 @@ export default function CadastroPlanos() {
   function handleContinue() {
     saveSession({ plan: selected });
     window.open(CHECKOUT_URLS[selected], "_blank");
-    setLocation("/app/onboarding");
+    setLocation("/cadastro/aguardando-pagamento");
   }
 
   return (
