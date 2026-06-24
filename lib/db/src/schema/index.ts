@@ -5,3 +5,5 @@ export * from "./patients";
 export * from "./appointments";
 export * from "./clinic-users";
 export * from "./clinic-convenios";
+export * from "./subscriptions";
+export * from "./webhook-logs";

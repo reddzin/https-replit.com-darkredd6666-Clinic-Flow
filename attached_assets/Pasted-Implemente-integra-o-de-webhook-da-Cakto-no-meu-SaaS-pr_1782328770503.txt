@@ -1,0 +1,50 @@
+Implemente integração de webhook da Cakto no meu SaaS (projeto MedFlow) para liberar/bloquear acesso automaticamente conforme status de pagamento.
+
+CONTEXTO DO FLUXO:
+1. Usuário cria conta normal no app.
+2. Clica em "Assinar agora" e é levado ao checkout da Cakto (link externo).
+3. A Cakto envia webhooks para o meu backend conforme eventos de pagamento acontecem.
+4. Meu backend processa o webhook e atualiza o status da assinatura no banco.
+5. Middleware de acesso bloqueia/libera páginas protegidas com base nesse status.
+
+ROTA WEBHOOK:
+Crie POST /api/cakto/webhook que:
+- Recebe JSON no formato: { "secret": "...", "event": "...", "data": { "id", "refId", "customer": { "name", "email", "phone", "docNumber" }, "product": { "id", "name" }, "status", "amount", "paymentMethod", "paidAt", "createdAt", ... } }
+- Primeiro valida o campo "secret" do body contra a variável de ambiente CAKTO_WEBHOOK_SECRET — se não bater, responde 401 e não processa nada.
+- Responde 200 imediatamente após validar e salvar o log (processamento pesado pode ser assíncrono, mas a resposta não pode demorar).
+- Identifica o evento em data.event e direciona para o handler correto.
+- Usa data.data.id (id do pedido) como chave de idempotência — antes de processar, verifica em webhook_logs se já existe um log com esse cakto_order_id e esse event; se já existe, ignora e responde 200 sem reprocessar.
+- Salva sempre um registro em webhook_logs, independente de sucesso ou erro.
+
+EVENTOS A TRATAR (nome do evento vem em data.event, exatamente como a Cakto envia):
+- purchase_approved → status = active
+- subscription_created → status = active
+- subscription_renewed → status = active
+- subscription_canceled → status = canceled (mantém o registro, nunca apaga)
+- subscription_renewal_refused (se a Cakto enviar com outro nome como purchase_refused tratar igual) → status = payment_failed
+- refund → status = refunded
+- chargeback → status = chargeback
+
+Para cada evento, busca ou cria o registro em subscriptions usando data.data.customer.email como chave de busca do usuário. Se não existir usuário com esse e-mail ainda no banco, salva mesmo assim na tabela subscriptions com user_id null e email preenchido, para vincular depois quando o usuário criar conta com esse mesmo e-mail (ao criar conta, verificar se já existe subscription pendente com esse e-mail e vincular automaticamente).
+
+TABELA subscriptions:
+id, user_id (nullable), email, cakto_order_id (data.data.id), cakto_ref_id (data.data.refId), cakto_subscription_id (se vier), plan_name (data.data.product.name), status, paid_until (calcular como agora + 30 dias quando status vira active, null quando cancelado/bloqueado), canceled_at, created_at, updated_at.
+
+TABELA webhook_logs:
+id, event_type, cakto_order_id, payload (JSON completo do body recebido), processed (boolean), error_message (nullable), created_at.
+
+FUNÇÃO HELPER:
+checkUserSubscription(userId) — busca a subscription mais recente daquele user_id, retorna { canAccess: boolean, status: string, paidUntil: date }. canAccess é true apenas se status === 'active' e paid_until ainda não passou.
+
+MIDDLEWARE DE ACESSO:
+Em todas as rotas /app/*, depois de verificar autenticação, chama checkUserSubscription(userId). Se canAccess for false, redireciona para tela de paywall mostrando o status atual (cancelado, pagamento recusado, reembolsado, etc) com botão para assinar novamente via link Cakto.
+
+VARIÁVEIS DE AMBIENTE (usar Secrets do Replit, nunca hardcoded):
+CAKTO_WEBHOOK_SECRET, CAKTO_CLIENT_ID, CAKTO_CLIENT_SECRET, DATABASE_URL (se já não existir).
+
+SEGURANÇA:
+- Nunca expor CAKTO_CLIENT_SECRET ou CAKTO_WEBHOOK_SECRET no frontend.
+- Todo o processamento do webhook envolto em try/catch — erro não pode derrubar o servidor nem impedir a resposta 200 (responde 200 e loga o erro em webhook_logs.error_message).
+- Logar o payload completo de todo webhook recebido, mesmo os rejeitados por secret inválido (mas sem salvar o secret em texto no log).
+
+Depois de implementar, simule um webhook de teste via curl/Postman para o evento purchase_approved com um e-mail de teste e confirme: 1) que aparece em webhook_logs, 2) que cria/atualiza subscriptions com status active, 3) que checkUserSubscription retorna canAccess true para esse e-mail. Mostre print do resultado de cada teste.

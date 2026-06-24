@@ -8,6 +8,7 @@ import patientsRouter from "./patients";
 import clinicUsersRouter from "./clinic-users";
 import clinicConveniosRouter from "./clinic-convenios";
 import reportsRouter from "./reports";
+import caktoRouter from "./cakto";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(patientsRouter);
 router.use(clinicUsersRouter);
 router.use(clinicConveniosRouter);
 router.use(reportsRouter);
+router.use(caktoRouter);
 
 export default router;

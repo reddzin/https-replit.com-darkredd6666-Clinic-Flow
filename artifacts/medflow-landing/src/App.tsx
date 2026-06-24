@@ -1,5 +1,6 @@
 import { Switch, Route, Router as WouterRouter, useLocation, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, useEffect, useCallback } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
@@ -24,6 +25,7 @@ import Financeiro from "@/pages/app/Financeiro";
 import Relatorios from "@/pages/app/Relatorios";
 import Configuracoes from "@/pages/app/Configuracoes";
 import Links from "@/pages/app/Links";
+import Paywall from "@/pages/app/Paywall";
 import PacienteLogin from "@/pages/paciente/Login";
 import PacienteDashboard from "@/pages/paciente/Dashboard";
 import { getSession } from "@/lib/clinic";
@@ -31,10 +33,41 @@ import { getPatientSession } from "@/lib/patient";
 
 const queryClient = new QueryClient();
 
+interface SubStatus {
+  canAccess: boolean;
+  status: string;
+  paidUntil: string | null;
+}
+
 /** Wraps /app/* routes: redirects unauthenticated users and those who haven't
  *  completed onboarding before they can access any protected page. */
 function ProtectedApp() {
   const session = getSession();
+  const [sub, setSub] = useState<SubStatus | null>(null);
+  const [subLoading, setSubLoading] = useState(true);
+
+  const checkSub = useCallback(async () => {
+    if (!session?.email) return;
+    setSubLoading(true);
+    try {
+      const res = await fetch(`/api/cakto/subscription?email=${encodeURIComponent(session.email)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSub(data);
+      } else {
+        // On API error, grant access so we don't lock out users due to infra issues
+        setSub({ canAccess: true, status: "unknown", paidUntil: null });
+      }
+    } catch {
+      setSub({ canAccess: true, status: "unknown", paidUntil: null });
+    } finally {
+      setSubLoading(false);
+    }
+  }, [session?.email]);
+
+  useEffect(() => {
+    checkSub();
+  }, [checkSub]);
 
   // No session at all → login
   if (!session?.email || !session?.token) {
@@ -44,6 +77,20 @@ function ProtectedApp() {
   // Onboarding not finished → go to /app/onboarding (cannot be skipped)
   if (!session.onboarding_completed) {
     return <Redirect to="/app/onboarding" />;
+  }
+
+  // While checking subscription, show nothing (avoids flash)
+  if (subLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // Subscription check failed → paywall
+  if (sub && !sub.canAccess) {
+    return <Paywall status={sub.status} onRetry={checkSub} />;
   }
 
   return (
