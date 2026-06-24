@@ -18,8 +18,16 @@ import {
   Clock,
   Loader2,
   Trash2,
+  CreditCard,
+  Zap,
+  Star,
+  Crown,
+  X,
+  CalendarDays,
+  ArrowRight,
 } from "lucide-react";
 import { getSession, saveSession, generateSlug } from "@/lib/clinic";
+import { usePlan, type PlanTier } from "@/contexts/PlanContext";
 
 const tabs = [
   { id: "clinica", label: "Clínica", icon: Building },
@@ -27,7 +35,38 @@ const tabs = [
   { id: "convenios", label: "Convênios", icon: Heart },
   { id: "notificacoes", label: "Notificações", icon: Bell },
   { id: "integracoes", label: "Integrações", icon: Puzzle },
+  { id: "plano", label: "Plano", icon: CreditCard },
 ];
+
+const PLAN_INFO: Record<PlanTier, { name: string; price: string; badge: string; badgeClass: string; icon: typeof Zap; checkoutUrl: string; features: string[] }> = {
+  essencial: {
+    name: "Essencial",
+    price: "R$79",
+    badge: "Básico",
+    badgeClass: "bg-gray-100 text-gray-700",
+    icon: Zap,
+    checkoutUrl: "https://pay.cakto.com.br/4aexe9z_913925",
+    features: ["1 médico ativo", "Máx. 30 agendamentos/mês", "Agendamento online", "Prontuários básicos", "Suporte por e-mail"],
+  },
+  pro: {
+    name: "Pro",
+    price: "R$137",
+    badge: "Mais popular",
+    badgeClass: "bg-emerald-100 text-emerald-700",
+    icon: Star,
+    checkoutUrl: "https://pay.cakto.com.br/dqj8q3m",
+    features: ["Até 5 médicos ativos", "Agendamentos ilimitados", "Lista de espera automática", "Lembrete 30min antes", "Dashboard completo", "Suporte prioritário"],
+  },
+  supreme: {
+    name: "Supreme",
+    price: "R$197",
+    badge: "Premium",
+    badgeClass: "bg-violet-100 text-violet-700",
+    icon: Crown,
+    checkoutUrl: "https://pay.cakto.com.br/ms5g33h",
+    features: ["Médicos ilimitados", "Tudo do Pro", "Múltiplos links por especialidade", "Relatório mensal completo", "Múltiplas unidades", "Gerente de conta dedicado"],
+  },
+};
 
 const ROLES = ["Médico", "Recepcionista", "Financeiro", "Admin"];
 const STATUS_OPTIONS = ["Ativo", "Inativo"];
@@ -86,9 +125,29 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
 export default function Configuracoes() {
   const [activeTab, setActiveTab] = useState("clinica");
   const [notifAtivos, setNotifAtivos] = useState(notificacoes.map(() => true));
+  const { planTier } = usePlan();
 
   const session = getSession();
   const clinicSlugKey = session?.clinicSlug ?? "";
+
+  // ── Plano e Assinatura ──────────────────────────────────────────────────────
+  const [paidUntil, setPaidUntil] = useState<string | null>(null);
+  const [subStatus, setSubStatus] = useState<string>("unknown");
+  const [subLoading, setSubLoading] = useState(false);
+  const [showPlanModal, setShowPlanModal] = useState(false);
+
+  useEffect(() => {
+    if (activeTab !== "plano" || !session?.email) return;
+    setSubLoading(true);
+    fetch(`/api/cakto/subscription?email=${encodeURIComponent(session.email)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        setPaidUntil(data.paidUntil ?? null);
+        setSubStatus(data.status ?? "unknown");
+      })
+      .catch(() => {})
+      .finally(() => setSubLoading(false));
+  }, [activeTab, session?.email]);
 
   // ── Clínica ────────────────────────────────────────────────────────────────
   const [clinicName, setClinicName] = useState(session?.clinicName ?? "");
@@ -481,6 +540,80 @@ export default function Configuracoes() {
           </div>
         )}
 
+        {/* ── PLANO E ASSINATURA ── */}
+        {activeTab === "plano" && (() => {
+          const current = PLAN_INFO[planTier];
+          const CurrentIcon = current.icon;
+          const renewalDate = paidUntil
+            ? new Date(paidUntil).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" })
+            : null;
+
+          return (
+            <div className="space-y-6 max-w-lg">
+              <h3 className="font-semibold text-foreground text-lg">Plano e Assinatura</h3>
+
+              {subLoading ? (
+                <div className="flex items-center gap-2 py-8 text-muted-foreground">
+                  <Loader2 className="w-5 h-5 animate-spin" /> Carregando dados da assinatura…
+                </div>
+              ) : (
+                <>
+                  {/* Card do plano atual */}
+                  <div className="rounded-2xl border-2 border-primary bg-primary/5 p-6 space-y-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-primary/15 text-primary flex items-center justify-center">
+                          <CurrentIcon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-foreground text-lg">{current.name}</p>
+                            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${current.badgeClass}`}>{current.badge}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            <span className="text-2xl font-black text-foreground">{current.price}</span>/mês
+                          </p>
+                        </div>
+                      </div>
+                      <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Ativo
+                      </span>
+                    </div>
+
+                    {renewalDate && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground border-t border-border pt-4">
+                        <CalendarDays className="w-4 h-4 shrink-0" />
+                        Próxima renovação em <strong className="text-foreground">{renewalDate}</strong>
+                      </div>
+                    )}
+
+                    <Button
+                      className="w-full gap-2"
+                      onClick={() => setShowPlanModal(true)}
+                      data-testid="button-mudar-plano"
+                    >
+                      <ArrowRight className="w-4 h-4" /> Mudar de plano
+                    </Button>
+                  </div>
+
+                  {/* Recursos incluídos */}
+                  <div className="rounded-xl border border-border p-5 space-y-3">
+                    <p className="text-sm font-semibold text-foreground">Incluído no seu plano</p>
+                    <ul className="space-y-2">
+                      {current.features.map((f, i) => (
+                        <li key={i} className="flex items-center gap-2 text-sm text-foreground">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </>
+              )}
+            </div>
+          );
+        })()}
+
         {/* ── INTEGRAÇÕES ── */}
         {activeTab === "integracoes" && (
           <div className="space-y-5">
@@ -553,6 +686,82 @@ export default function Configuracoes() {
             </Button>
           </div>
         </Modal>
+      )}
+
+      {/* ── MODAL: Mudar de Plano ── */}
+      {showPlanModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowPlanModal(false)}>
+          <div
+            className="bg-background rounded-2xl shadow-2xl w-full max-w-2xl p-6 space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground">Mudar de plano</h2>
+              <button onClick={() => setShowPlanModal(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-sm text-muted-foreground">Selecione o plano desejado. Você será redirecionado para o checkout da Cakto.</p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {(Object.keys(PLAN_INFO) as PlanTier[]).map((tier) => {
+                const plan = PLAN_INFO[tier];
+                const PlanIcon = plan.icon;
+                const isCurrent = tier === planTier;
+                return (
+                  <div
+                    key={tier}
+                    className={`relative rounded-xl border-2 p-5 flex flex-col gap-3 transition-all ${
+                      isCurrent
+                        ? "border-primary bg-primary/5"
+                        : "border-border hover:border-primary/50 hover:shadow-sm"
+                    }`}
+                  >
+                    {isCurrent && (
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-xs font-bold bg-primary text-primary-foreground px-3 py-0.5 rounded-full whitespace-nowrap">
+                        Plano atual
+                      </span>
+                    )}
+                    <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${isCurrent ? "bg-primary/15 text-primary" : "bg-muted text-muted-foreground"}`}>
+                      <PlanIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="font-bold text-foreground">{plan.name}</p>
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${plan.badgeClass}`}>{plan.badge}</span>
+                      </div>
+                      <p className="text-sm text-muted-foreground"><span className="text-xl font-black text-foreground">{plan.price}</span>/mês</p>
+                    </div>
+                    <ul className="space-y-1.5 flex-1">
+                      {plan.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-foreground">
+                          <Check className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      size="sm"
+                      className="w-full mt-2"
+                      disabled={isCurrent}
+                      variant={isCurrent ? "outline" : "default"}
+                      onClick={() => {
+                        if (!isCurrent) {
+                          window.open(plan.checkoutUrl, "_blank");
+                          setShowPlanModal(false);
+                        }
+                      }}
+                      data-testid={`button-select-plan-${tier}`}
+                    >
+                      {isCurrent ? "Plano atual" : `Mudar para ${plan.name}`}
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground text-center">Ao mudar de plano, o novo valor é cobrado no próximo ciclo. Dúvidas? Fale com o suporte.</p>
+          </div>
+        </div>
       )}
 
       {/* ── MODAL: Adicionar Convênio ── */}
