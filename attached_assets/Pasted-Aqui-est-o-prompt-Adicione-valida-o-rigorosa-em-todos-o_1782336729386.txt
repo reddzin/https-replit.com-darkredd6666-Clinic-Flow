@@ -1,0 +1,24 @@
+Aqui está o prompt:
+
+Adicione validação rigorosa em todos os formulários do MedFlow que envolvem dados reais de clínica e paciente. Nenhum dado aleatório ou fictício pode ser aceito.
+
+**Validação de nome (clínica, médico, paciente, usuário):**
+Mínimo 2 palavras (nome e sobrenome ou nome e razão social). Apenas letras, espaços, acentos e hífens. Sem números, sem caracteres especiais, sem sequências aleatórias como "asdfgh", "teste123", "aaaa". Implemente verificação de sequências repetidas — se mais de 3 caracteres iguais seguidos rejeita com mensagem "Nome inválido. Digite o nome completo real."
+
+**Validação de CPF:**
+Valida os 11 dígitos com o algoritmo real de verificação de CPF — não aceita CPFs inválidos matematicamente nem sequências como 111.111.111-11, 000.000.000-00, 123.456.789-09.
+
+**Validação de CNPJ:**
+Mesmo padrão — algoritmo real de verificação, rejeita CNPJs matematicamente inválidos.
+
+**Validação de telefone:**
+Apenas números brasileiros válidos — DDD entre 11 e 99, celular começa com 9, fixo começa com 2-5. Formato (DDD) 9XXXX-XXXX para celular ou (DDD) XXXX-XXXX para fixo. Rejeita (11) 1111-1111, (00) 00000-0000 e sequências inválidas.
+
+**Validação de endereço via API ViaCEP:**
+Ao digitar o CEP, consulta https://viacep.com.br/ws/[CEP]/json/ em tempo real. Se o CEP não existir na base dos Correios, rejeita com mensagem "CEP não encontrado. Verifique e tente novamente." Se existir, preenche automaticamente rua, bairro, cidade e estado — esses campos ficam readonly e não podem ser editados manualmente (exceto número e complemento). O endereço salvo no banco é exatamente o que veio da API dos Correios, não o que o usuário digitou.
+
+**Validação de e-mail:**
+Formato válido com domínio real — rejeita "teste@teste.com", "a@a.com", "email@email.com". Verifica se o domínio tem pelo menos 2 caracteres após o ponto. Sem espaços, sem caracteres especiais além de @ e ponto.
+
+**Regra geral:**
+Botão de salvar/confirmar fica disabled até todos os campos passarem pela validação. Mensagem de erro aparece inline abaixo do campo específico que falhou — não um alerta genérico. Nenhuma dessas validações pode ser burlada pelo usuário editando o HTML do navegador — a validação acontece também no backend antes de salvar no banco.

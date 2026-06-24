@@ -8,15 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Activity, ArrowLeft } from "lucide-react";
 import { saveSession } from "@/lib/clinic";
+import { validateName, validateEmail } from "@/lib/validation";
 
 const formSchema = z.object({
-  clinica: z.string().min(2, "O nome da clínica é obrigatório"),
-  responsavel: z.string().min(2, "O nome do responsável é obrigatório"),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres"),
+  clinica: z
+    .string()
+    .min(1, "Nome da clínica é obrigatório.")
+    .refine((v) => validateName(v) === null, (v) => ({ message: validateName(v) ?? "Nome inválido." })),
+  responsavel: z
+    .string()
+    .min(1, "Nome do responsável é obrigatório.")
+    .refine((v) => validateName(v) === null, (v) => ({ message: validateName(v) ?? "Nome inválido." })),
+  email: z
+    .string()
+    .min(1, "E-mail é obrigatório.")
+    .refine((v) => validateEmail(v) === null, (v) => ({ message: validateEmail(v) ?? "E-mail inválido." })),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
-  message: "As senhas não coincidem",
+  message: "As senhas não coincidem.",
   path: ["confirmPassword"],
 });
 
@@ -26,6 +36,7 @@ export default function Cadastro() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { clinica: "", responsavel: "", email: "", password: "", confirmPassword: "" },
+    mode: "onBlur",
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -135,7 +146,7 @@ export default function Cadastro() {
                   <FormItem>
                     <FormLabel>Seu nome (responsável)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome completo" {...field} />
+                      <Input placeholder="Nome e sobrenome" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -185,7 +196,11 @@ export default function Cadastro() {
                 />
               </div>
 
-              <Button type="submit" className="w-full py-6 text-base mt-2">
+              <Button
+                type="submit"
+                className="w-full py-6 text-base mt-2"
+                disabled={form.formState.isSubmitting}
+              >
                 Continuar para escolha de plano →
               </Button>
             </form>

@@ -20,6 +20,7 @@ import {
   Clock,
 } from "lucide-react";
 import { saveSession, getSession, generateSlug, type Doctor, type BusinessHours } from "@/lib/clinic";
+import { validateName, validatePhone, lookupCEP, maskPhone, maskCEP } from "@/lib/validation";
 
 const CLINIC_TYPES = [
   { id: "clinica-geral", label: "Clínica Geral", icon: Stethoscope },
@@ -91,6 +92,20 @@ export default function Onboarding() {
   const [clinicCity, setClinicCity] = useState(session.clinicCity ?? "");
   const [clinicState, setClinicState] = useState(session.clinicState ?? "");
 
+  // CEP lookup
+  const [cep, setCep] = useState("");
+  const [cepLoading, setCepLoading] = useState(false);
+  const [cepError, setCepError] = useState("");
+  const [cepFound, setCepFound] = useState(false);
+  const [logradouro, setLogradouro] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
+
+  // Step 1 validation errors
+  const [clinicNameError, setClinicNameError] = useState("");
+  const [clinicPhoneError, setClinicPhoneError] = useState("");
+
   // Step 2 – Horários
   const [hours, setHours] = useState<BusinessHours>(session.businessHours ?? DEFAULT_HOURS);
 
@@ -101,23 +116,66 @@ export default function Onboarding() {
   // Step 4 – Duração
   const [duration, setDuration] = useState(session.appointmentDuration ?? 30);
 
+  async function handleCepLookup(rawCep: string) {
+    const digits = rawCep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    setCepError("");
+    setCepFound(false);
+    setLogradouro(""); setBairro(""); setClinicCity(""); setClinicState("");
+    try {
+      const data = await lookupCEP(rawCep);
+      setLogradouro(data.logradouro);
+      setBairro(data.bairro);
+      setClinicCity(data.localidade);
+      setClinicState(data.uf);
+      setCepFound(true);
+    } catch (e: unknown) {
+      setCepError(e instanceof Error ? e.message : "CEP não encontrado.");
+    } finally {
+      setCepLoading(false);
+    }
+  }
+
   function canProceed() {
     if (step === 0) return !!clinicType;
-    if (step === 1) return clinicName.trim().length >= 2 && clinicAddress.trim().length >= 3;
+    if (step === 1) return (
+      clinicName.trim().length >= 2 &&
+      !validateName(clinicName) &&
+      cepFound &&
+      numero.trim().length > 0 &&
+      clinicPhone.trim().length > 0 &&
+      !validatePhone(clinicPhone)
+    );
     if (step === 2) return Object.values(hours).some((h) => h.active);
-    if (step === 3) return true; // optional
+    if (step === 3) return true;
     if (step === 4) return duration > 0;
     return false;
   }
 
   function handleNext() {
+    if (step === 1) {
+      const ne = validateName(clinicName);
+      const pe = validatePhone(clinicPhone);
+      if (ne) { setClinicNameError(ne); return; }
+      if (pe) { setClinicPhoneError(pe); return; }
+      const addrParts = [logradouro, numero, complemento, bairro].filter(Boolean);
+      const finalAddress = addrParts.join(", ");
+      setClinicAddress(finalAddress);
+      const slug = generateSlug(clinicName);
+      saveSession({ clinicName, clinicSlug: slug, clinicAddress: finalAddress, clinicPhone, clinicCity, clinicState });
+      setStep((s) => s + 1);
+      return;
+    }
     if (step === 4) {
       const slug = generateSlug(clinicName);
+      const addrParts = [logradouro, numero, complemento, bairro].filter(Boolean);
+      const finalAddress = addrParts.join(", ") || clinicAddress;
       saveSession({
         clinicType,
         clinicName,
         clinicSlug: slug,
-        clinicAddress,
+        clinicAddress: finalAddress,
         clinicPhone,
         clinicCity,
         clinicState,
@@ -147,12 +205,8 @@ export default function Onboarding() {
       setLocation("/app");
       return;
     }
-    // Save progress after each step
+    // Save progress after each step (steps 0, 2, 3)
     if (step === 0) saveSession({ clinicType });
-    if (step === 1) {
-      const slug = generateSlug(clinicName);
-      saveSession({ clinicName, clinicSlug: slug, clinicAddress, clinicPhone, clinicCity, clinicState });
-    }
     if (step === 2) saveSession({ businessHours: hours });
     if (step === 3) saveSession({ doctors });
     setStep((s) => s + 1);
@@ -249,57 +303,120 @@ export default function Onboarding() {
                     type="text"
                     placeholder="Ex: Clínica São Lucas"
                     value={clinicName}
-                    onChange={(e) => setClinicName(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                    onChange={(e) => { setClinicName(e.target.value); setClinicNameError(""); }}
+                    onBlur={() => setClinicNameError(validateName(clinicName) ?? "")}
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-background text-sm outline-none focus:border-primary transition-colors ${clinicNameError ? "border-destructive" : "border-border"}`}
                   />
-                  {clinicName.trim().length >= 2 && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Link de agendamento: <span className="font-mono text-primary">{window.location.origin}{import.meta.env.BASE_URL.replace(/\/$/, "")}/booking/{generateSlug(clinicName)}</span>
-                    </p>
+                  {clinicNameError
+                    ? <p className="text-xs text-destructive font-medium mt-1">{clinicNameError}</p>
+                    : clinicName.trim().length >= 2 && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Link: <span className="font-mono text-primary">{window.location.origin}{import.meta.env.BASE_URL.replace(/\/$/, "")}/booking/{generateSlug(clinicName)}</span>
+                      </p>
+                    )
+                  }
+                </div>
+
+                {/* CEP */}
+                <div className="space-y-3 border border-border rounded-xl p-4 bg-muted/20">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Endereço via CEP</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">CEP *</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="00000-000"
+                          value={cep}
+                          maxLength={9}
+                          onChange={(e) => {
+                            const v = maskCEP(e.target.value);
+                            setCep(v);
+                            setCepError("");
+                            setCepFound(false);
+                            setLogradouro(""); setBairro(""); setClinicCity(""); setClinicState("");
+                          }}
+                          onBlur={() => handleCepLookup(cep)}
+                          className={`w-full px-4 py-2.5 pr-8 rounded-xl border bg-background text-sm outline-none focus:border-primary transition-colors ${cepError ? "border-destructive" : cepFound ? "border-emerald-500" : "border-border"}`}
+                        />
+                        {cepLoading && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+                        )}
+                      </div>
+                      {cepError && <p className="text-xs text-destructive font-medium mt-1">{cepError}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-foreground mb-1.5">Número *</label>
+                      <input
+                        type="text"
+                        placeholder="123"
+                        value={numero}
+                        onChange={(e) => setNumero(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                      />
+                    </div>
+                  </div>
+
+                  {cepFound && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Logradouro</label>
+                        <input
+                          type="text"
+                          value={logradouro}
+                          readOnly
+                          className="w-full px-4 py-2.5 rounded-xl border border-border bg-muted/40 text-sm cursor-not-allowed text-muted-foreground"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-1.5">Bairro</label>
+                          <input
+                            type="text"
+                            value={bairro}
+                            readOnly
+                            className="w-full px-4 py-2.5 rounded-xl border border-border bg-muted/40 text-sm cursor-not-allowed text-muted-foreground"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground mb-1.5">Cidade / UF</label>
+                          <input
+                            type="text"
+                            value={`${clinicCity} / ${clinicState}`}
+                            readOnly
+                            className="w-full px-4 py-2.5 rounded-xl border border-border bg-muted/40 text-sm cursor-not-allowed text-muted-foreground"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground mb-1.5">Complemento <span className="text-muted-foreground font-normal">(opcional)</span></label>
+                        <input
+                          type="text"
+                          placeholder="Sala 201, Bloco B..."
+                          value={complemento}
+                          onChange={(e) => setComplemento(e.target.value)}
+                          className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {!cepFound && !cepLoading && !cepError && (
+                    <p className="text-xs text-muted-foreground">Digite o CEP para preenchimento automático do endereço.</p>
                   )}
                 </div>
+
                 <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Endereço completo *</label>
-                  <input
-                    type="text"
-                    placeholder="Rua, número, bairro"
-                    value={clinicAddress}
-                    onChange={(e) => setClinicAddress(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Cidade</label>
-                    <input
-                      type="text"
-                      placeholder="São Paulo"
-                      value={clinicCity}
-                      onChange={(e) => setClinicCity(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground mb-1.5">Estado</label>
-                    <input
-                      type="text"
-                      placeholder="SP"
-                      maxLength={2}
-                      value={clinicState}
-                      onChange={(e) => setClinicState(e.target.value.toUpperCase())}
-                      className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors uppercase"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-1.5">Telefone / WhatsApp</label>
+                  <label className="block text-sm font-medium text-foreground mb-1.5">Telefone / WhatsApp *</label>
                   <input
                     type="tel"
                     placeholder="(11) 99999-9999"
                     value={clinicPhone}
-                    onChange={(e) => setClinicPhone(e.target.value)}
-                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                    onChange={(e) => { setClinicPhone(maskPhone(e.target.value)); setClinicPhoneError(""); }}
+                    onBlur={() => setClinicPhoneError(validatePhone(clinicPhone) ?? "")}
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-background text-sm outline-none focus:border-primary transition-colors ${clinicPhoneError ? "border-destructive" : "border-border"}`}
                   />
+                  {clinicPhoneError && <p className="text-xs text-destructive font-medium mt-1">{clinicPhoneError}</p>}
                 </div>
               </div>
             )}

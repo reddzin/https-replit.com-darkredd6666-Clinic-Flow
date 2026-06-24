@@ -28,6 +28,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { getSession, saveSession, generateSlug } from "@/lib/clinic";
+import { validateName, validatePhone, validateEmail, lookupCEP, maskPhone, maskCEP, type CepData } from "@/lib/validation";
 import { usePlan, type PlanTier } from "@/contexts/PlanContext";
 
 const tabs = [
@@ -216,6 +217,19 @@ export default function Configuracoes() {
   const [logoPreview, setLogoPreview] = useState<string | null>(session?.logoUrl ?? null);
   const [savedClinic, setSavedClinic] = useState(false);
   const [logoError, setLogoError] = useState("");
+
+  // Clínica — validação inline
+  const [clinicNameError, setClinicNameError] = useState("");
+  const [clinicPhoneError, setClinicPhoneError] = useState("");
+  const [clinicEmailError, setClinicEmailError] = useState("");
+
+  // Clínica — CEP lookup
+  const [cfgCep, setCfgCep] = useState("");
+  const [cfgCepLoading, setCfgCepLoading] = useState(false);
+  const [cfgCepError, setCfgCepError] = useState("");
+  const [cfgCepData, setCfgCepData] = useState<CepData | null>(null);
+  const [cfgNumero, setCfgNumero] = useState("");
+  const [cfgComplemento, setCfgComplemento] = useState("");
   const logoInputRef = useRef<HTMLInputElement>(null);
 
   // ── Usuários ───────────────────────────────────────────────────────────────
@@ -293,12 +307,44 @@ export default function Configuracoes() {
     catch { setLogoError("Erro ao processar a imagem. Tente outro arquivo."); }
   }
 
+  async function handleCfgCepLookup(rawCep: string) {
+    const digits = rawCep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setCfgCepLoading(true);
+    setCfgCepError("");
+    setCfgCepData(null);
+    try {
+      const data = await lookupCEP(rawCep);
+      setCfgCepData(data);
+    } catch (e: unknown) {
+      setCfgCepError(e instanceof Error ? e.message : "CEP não encontrado.");
+    } finally {
+      setCfgCepLoading(false);
+    }
+  }
+
   function handleSaveClinic() {
+    const ne = validateName(clinicName);
+    const pe = validatePhone(clinicPhone);
+    const ee = validateEmail(clinicEmail);
+    if (ne) { setClinicNameError(ne); return; }
+    if (pe) { setClinicPhoneError(pe); return; }
+    if (ee) { setClinicEmailError(ee); return; }
+
+    let finalAddress = clinicAddress.trim();
+    if (cfgCepData) {
+      const parts = [cfgCepData.logradouro, cfgNumero, cfgComplemento, cfgCepData.bairro].filter(Boolean);
+      finalAddress = parts.join(", ");
+    }
+
     const slugToSave = clinicSlug.trim() || generateSlug(clinicName);
     const current = getSession();
+    const cityToSave = cfgCepData?.localidade ?? current?.clinicCity;
+    const stateToSave = cfgCepData?.uf ?? current?.clinicState;
     try {
-      saveSession({ clinicName: clinicName.trim(), clinicSlug: slugToSave, clinicPhone: clinicPhone.trim(), email: clinicEmail.trim(), clinicAddress: clinicAddress.trim(), logoUrl: logoPreview ?? undefined });
+      saveSession({ clinicName: clinicName.trim(), clinicSlug: slugToSave, clinicPhone: clinicPhone.trim(), email: clinicEmail.trim(), clinicAddress: finalAddress, clinicCity: cityToSave, clinicState: stateToSave, logoUrl: logoPreview ?? undefined });
     } catch { setLogoError("Erro ao salvar: armazenamento local cheio. Tente uma imagem menor."); return; }
+    setClinicAddress(finalAddress);
     setClinicSlug(slugToSave);
     setSavedClinic(true);
     setTimeout(() => setSavedClinic(false), 2500);
@@ -307,7 +353,7 @@ export default function Configuracoes() {
       fetch("/api/clinics/by-owner", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ownerEmail, slug: slugToSave, clinicName: clinicName.trim(), clinicPhone: clinicPhone.trim(), clinicAddress: clinicAddress.trim(), clinicCity: current?.clinicCity, clinicState: current?.clinicState, clinicType: current?.clinicType, businessHours: current?.businessHours, doctors: current?.doctors, appointmentDuration: current?.appointmentDuration }),
+        body: JSON.stringify({ ownerEmail, slug: slugToSave, clinicName: clinicName.trim(), clinicPhone: clinicPhone.trim(), clinicAddress: finalAddress, clinicCity: cityToSave, clinicState: stateToSave, clinicType: current?.clinicType, businessHours: current?.businessHours, doctors: current?.doctors, appointmentDuration: current?.appointmentDuration }),
       }).catch(console.error);
     }
   }
@@ -425,21 +471,97 @@ export default function Configuracoes() {
             <div className="space-y-4">
               <div className="space-y-1.5">
                 <Label htmlFor="cfg-clinic-name">Nome da Clínica</Label>
-                <Input id="cfg-clinic-name" value={clinicName} onChange={e => setClinicName(e.target.value)} placeholder="Nome da clínica" data-testid="input-clinic-name" />
+                <Input
+                  id="cfg-clinic-name"
+                  value={clinicName}
+                  onChange={e => { setClinicName(e.target.value); setClinicNameError(""); }}
+                  onBlur={() => setClinicNameError(validateName(clinicName) ?? "")}
+                  placeholder="Nome da clínica"
+                  data-testid="input-clinic-name"
+                  className={clinicNameError ? "border-destructive" : ""}
+                />
+                {clinicNameError && <p className="text-xs text-destructive font-medium">{clinicNameError}</p>}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <Label htmlFor="cfg-phone">Telefone</Label>
-                  <Input id="cfg-phone" value={clinicPhone} onChange={e => setClinicPhone(e.target.value)} placeholder="(11) 99999-9999" data-testid="input-phone" />
+                  <Input
+                    id="cfg-phone"
+                    value={clinicPhone}
+                    onChange={e => { setClinicPhone(maskPhone(e.target.value)); setClinicPhoneError(""); }}
+                    onBlur={() => setClinicPhoneError(validatePhone(clinicPhone) ?? "")}
+                    placeholder="(11) 99999-9999"
+                    data-testid="input-phone"
+                    className={clinicPhoneError ? "border-destructive" : ""}
+                  />
+                  {clinicPhoneError && <p className="text-xs text-destructive font-medium">{clinicPhoneError}</p>}
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="cfg-email">E-mail</Label>
-                  <Input id="cfg-email" value={clinicEmail} onChange={e => setClinicEmail(e.target.value)} placeholder="contato@clinica.com" data-testid="input-email" />
+                  <Input
+                    id="cfg-email"
+                    value={clinicEmail}
+                    onChange={e => { setClinicEmail(e.target.value); setClinicEmailError(""); }}
+                    onBlur={() => setClinicEmailError(validateEmail(clinicEmail) ?? "")}
+                    placeholder="contato@clinica.com"
+                    data-testid="input-email"
+                    className={clinicEmailError ? "border-destructive" : ""}
+                  />
+                  {clinicEmailError && <p className="text-xs text-destructive font-medium">{clinicEmailError}</p>}
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="cfg-address">Endereço</Label>
-                <Input id="cfg-address" value={clinicAddress} onChange={e => setClinicAddress(e.target.value)} placeholder="Rua, número, bairro, cidade" data-testid="input-address" />
+
+              {/* CEP e endereço */}
+              <div className="space-y-3 border border-border rounded-xl p-4 bg-muted/20">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Endereço via CEP</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="cfg-cep">CEP</Label>
+                    <div className="relative">
+                      <Input
+                        id="cfg-cep"
+                        value={cfgCep}
+                        onChange={e => { const v = maskCEP(e.target.value); setCfgCep(v); setCfgCepError(""); setCfgCepData(null); }}
+                        onBlur={() => handleCfgCepLookup(cfgCep)}
+                        placeholder="00000-000"
+                        maxLength={9}
+                        data-testid="input-cfg-cep"
+                        className={cfgCepError ? "border-destructive" : ""}
+                      />
+                      {cfgCepLoading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />}
+                    </div>
+                    {cfgCepError && <p className="text-xs text-destructive font-medium">{cfgCepError}</p>}
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="cfg-numero">Número</Label>
+                    <Input id="cfg-numero" value={cfgNumero} onChange={e => setCfgNumero(e.target.value)} placeholder="123" data-testid="input-cfg-numero" />
+                  </div>
+                </div>
+                {cfgCepData && (
+                  <div className="space-y-2">
+                    <div className="space-y-1.5">
+                      <Label>Logradouro</Label>
+                      <Input value={cfgCepData.logradouro} readOnly className="bg-muted/40 cursor-not-allowed" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <Label>Bairro</Label>
+                        <Input value={cfgCepData.bairro} readOnly className="bg-muted/40 cursor-not-allowed" />
+                      </div>
+                      <div className="space-y-1.5">
+                        <Label>Cidade / UF</Label>
+                        <Input value={`${cfgCepData.localidade} / ${cfgCepData.uf}`} readOnly className="bg-muted/40 cursor-not-allowed" />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="cfg-complemento">Complemento <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+                      <Input id="cfg-complemento" value={cfgComplemento} onChange={e => setCfgComplemento(e.target.value)} placeholder="Sala 201, Bloco B..." data-testid="input-cfg-complemento" />
+                    </div>
+                  </div>
+                )}
+                {!cfgCepData && clinicAddress && (
+                  <p className="text-xs text-muted-foreground">Endereço atual: <span className="font-medium">{clinicAddress}</span></p>
+                )}
               </div>
               <div className="space-y-1.5 pt-2 border-t border-border">
                 <Label htmlFor="cfg-slug" className="flex items-center gap-2">
@@ -470,7 +592,12 @@ export default function Configuracoes() {
                 {logoError && <p className="text-xs text-destructive font-medium">{logoError}</p>}
               </div>
             </div>
-            <Button onClick={handleSaveClinic} className={`gap-2 transition-all ${savedClinic ? "bg-emerald-600 hover:bg-emerald-700" : ""}`} data-testid="button-salvar-clinica">
+            <Button
+              onClick={handleSaveClinic}
+              disabled={!!validateName(clinicName) || !!validatePhone(clinicPhone) || !!validateEmail(clinicEmail)}
+              className={`gap-2 transition-all ${savedClinic ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
+              data-testid="button-salvar-clinica"
+            >
               {savedClinic ? <><Check className="w-4 h-4" />Salvo!</> : "Salvar Alterações"}
             </Button>
           </div>

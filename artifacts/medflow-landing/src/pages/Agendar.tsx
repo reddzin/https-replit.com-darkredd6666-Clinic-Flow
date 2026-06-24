@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { getClinicData, type ClinicData } from "@/lib/clinic";
 import { savePatientSession } from "@/lib/patient";
+import { validateName, validatePhone, validateEmail, maskPhone } from "@/lib/validation";
 
 const specialties = [
   { id: "clinica-geral", label: "Clínica Geral", icon: Stethoscope, color: "bg-blue-50 text-blue-600 border-blue-200" },
@@ -121,6 +122,9 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
   const [patientPassword, setPatientPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [nameError, setNameError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [emailError, setEmailError] = useState("");
 
   const today = new Date();
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -354,20 +358,34 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
                   <label className="block text-sm font-medium text-foreground mb-1.5">Nome completo</label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input type="text" placeholder="Seu nome" value={name} onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                    <input
+                      type="text"
+                      placeholder="Nome e sobrenome"
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); setNameError(""); }}
+                      onBlur={() => setNameError(validateName(name) ?? "")}
+                      className={`w-full pl-9 pr-4 py-2.5 rounded-xl border bg-background text-sm outline-none focus:border-primary transition-colors ${nameError ? "border-destructive" : "border-border"}`}
                     />
                   </div>
+                  {nameError && <p className="text-xs text-destructive font-medium mt-1">{nameError}</p>}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-foreground mb-1.5">WhatsApp</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">📱</span>
-                    <input type="tel" placeholder="(11) 99999-9999" value={phone} onChange={(e) => setPhone(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
+                    <input
+                      type="tel"
+                      placeholder="(11) 99999-9999"
+                      value={phone}
+                      onChange={(e) => { setPhone(maskPhone(e.target.value)); setPhoneError(""); }}
+                      onBlur={() => setPhoneError(validatePhone(phone) ?? "")}
+                      className={`w-full pl-9 pr-4 py-2.5 rounded-xl border bg-background text-sm outline-none focus:border-primary transition-colors ${phoneError ? "border-destructive" : "border-border"}`}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Você receberá a confirmação por WhatsApp.</p>
+                  {phoneError
+                    ? <p className="text-xs text-destructive font-medium mt-1">{phoneError}</p>
+                    : <p className="text-xs text-muted-foreground mt-1">Você receberá a confirmação por WhatsApp.</p>
+                  }
                 </div>
 
                 {/* Optional account creation */}
@@ -375,11 +393,19 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
                   <p className="text-sm font-medium text-foreground mb-0.5">Salvar histórico? <span className="text-muted-foreground font-normal">(opcional)</span></p>
                   <p className="text-xs text-muted-foreground mb-3">Crie uma conta para acompanhar suas consultas.</p>
                   <div className="space-y-3">
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <input type="email" placeholder="seu@email.com" value={patientEmail} onChange={(e) => setPatientEmail(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background text-sm outline-none focus:border-primary transition-colors"
-                      />
+                    <div>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <input
+                          type="email"
+                          placeholder="seu@email.com"
+                          value={patientEmail}
+                          onChange={(e) => { setPatientEmail(e.target.value); setEmailError(""); }}
+                          onBlur={() => setEmailError(patientEmail.trim() ? (validateEmail(patientEmail) ?? "") : "")}
+                          className={`w-full pl-9 pr-4 py-2.5 rounded-xl border bg-background text-sm outline-none focus:border-primary transition-colors ${emailError ? "border-destructive" : "border-border"}`}
+                        />
+                      </div>
+                      {emailError && <p className="text-xs text-destructive font-medium mt-1">{emailError}</p>}
                     </div>
                     {patientEmail.trim() && (
                       <div className="relative">
@@ -397,8 +423,18 @@ function BookingFlow({ clinic }: { clinic: ClinicData }) {
               </div>
               <Button
                 className="w-full mt-6"
-                disabled={!name.trim() || !phone.trim() || saving}
+                disabled={
+                  !name.trim() || !phone.trim() || saving ||
+                  !!validateName(name) || !!validatePhone(phone) ||
+                  (!!patientEmail.trim() && !!validateEmail(patientEmail))
+                }
                 onClick={async () => {
+                  const ne = validateName(name);
+                  const pe = validatePhone(phone);
+                  const ee = patientEmail.trim() ? validateEmail(patientEmail) : null;
+                  if (ne) { setNameError(ne); return; }
+                  if (pe) { setPhoneError(pe); return; }
+                  if (ee) { setEmailError(ee); return; }
                   setSaving(true);
                   try {
                     const dateStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(selectedDay).padStart(2, "0")}`;

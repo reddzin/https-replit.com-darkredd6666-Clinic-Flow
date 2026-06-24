@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { validateName, validatePhone, validateEmail, maskPhone } from "@/lib/validation";
 
 const STORAGE_KEY = "medflow_patients";
 
@@ -44,7 +45,10 @@ export default function Pacientes() {
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
   const [nascimento, setNascimento] = useState("");
-  const [error, setError] = useState("");
+
+  const [nomeError, setNomeError]       = useState("");
+  const [telefoneError, setTelefoneError] = useState("");
+  const [emailError, setEmailError]     = useState("");
 
   useEffect(() => {
     setPatients(loadPatients());
@@ -57,12 +61,22 @@ export default function Pacientes() {
   );
 
   function resetForm() {
-    setNome(""); setTelefone(""); setEmail(""); setNascimento(""); setError("");
+    setNome(""); setTelefone(""); setEmail(""); setNascimento("");
+    setNomeError(""); setTelefoneError(""); setEmailError("");
+  }
+
+  function validateAll(): boolean {
+    const ne = validateName(nome) ?? "";
+    const te = validatePhone(telefone) ?? "";
+    const ee = email.trim() ? (validateEmail(email) ?? "") : "";
+    setNomeError(ne);
+    setTelefoneError(te);
+    setEmailError(ee);
+    return !ne && !te && !ee;
   }
 
   function handleSubmit() {
-    if (!nome.trim()) { setError("Informe o nome do paciente."); return; }
-    if (!telefone.trim()) { setError("Informe o telefone."); return; }
+    if (!validateAll()) return;
 
     const novo: Patient = {
       id: crypto.randomUUID(),
@@ -84,6 +98,9 @@ export default function Pacientes() {
     setDialogOpen(open);
     if (!open) resetForm();
   }
+
+  const isFormValid =
+    !validateName(nome) && !validatePhone(telefone) && (!email.trim() || !validateEmail(email));
 
   return (
     <div className="space-y-6">
@@ -161,25 +178,64 @@ export default function Pacientes() {
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
               <Label htmlFor="nome">Nome completo *</Label>
-              <Input id="nome" placeholder="Nome do paciente" value={nome} onChange={e => setNome(e.target.value)} data-testid="input-nome-paciente" />
+              <Input
+                id="nome"
+                placeholder="Nome e sobrenome do paciente"
+                value={nome}
+                onChange={(e) => { setNome(e.target.value); setNomeError(""); }}
+                onBlur={() => setNomeError(validateName(nome) ?? "")}
+                data-testid="input-nome-paciente"
+                className={nomeError ? "border-destructive" : ""}
+              />
+              {nomeError && <p className="text-xs text-destructive font-medium">{nomeError}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="telefone">Telefone *</Label>
-              <Input id="telefone" placeholder="(11) 99999-9999" value={telefone} onChange={e => setTelefone(e.target.value)} data-testid="input-telefone-paciente" />
+              <Input
+                id="telefone"
+                placeholder="(11) 99999-9999"
+                value={telefone}
+                onChange={(e) => { setTelefone(maskPhone(e.target.value)); setTelefoneError(""); }}
+                onBlur={() => setTelefoneError(validatePhone(telefone) ?? "")}
+                data-testid="input-telefone-paciente"
+                className={telefoneError ? "border-destructive" : ""}
+              />
+              {telefoneError && <p className="text-xs text-destructive font-medium">{telefoneError}</p>}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="email">E-mail</Label>
-              <Input id="email" type="email" placeholder="paciente@email.com" value={email} onChange={e => setEmail(e.target.value)} data-testid="input-email-paciente" />
+              <Label htmlFor="email">E-mail <span className="text-muted-foreground font-normal">(opcional)</span></Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="paciente@email.com"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                onBlur={() => setEmailError(email.trim() ? (validateEmail(email) ?? "") : "")}
+                data-testid="input-email-paciente"
+                className={emailError ? "border-destructive" : ""}
+              />
+              {emailError && <p className="text-xs text-destructive font-medium">{emailError}</p>}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="nascimento">Data de nascimento</Label>
-              <Input id="nascimento" type="date" value={nascimento} onChange={e => setNascimento(e.target.value)} data-testid="input-nascimento-paciente" />
+              <Input
+                id="nascimento"
+                type="date"
+                value={nascimento}
+                onChange={(e) => setNascimento(e.target.value)}
+                data-testid="input-nascimento-paciente"
+              />
             </div>
-            {error && <p className="text-sm text-destructive font-medium">{error}</p>}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => handleOpenChange(false)}>Cancelar</Button>
-            <Button onClick={handleSubmit} data-testid="button-salvar-paciente">Cadastrar Paciente</Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={!isFormValid}
+              data-testid="button-salvar-paciente"
+            >
+              Cadastrar Paciente
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
