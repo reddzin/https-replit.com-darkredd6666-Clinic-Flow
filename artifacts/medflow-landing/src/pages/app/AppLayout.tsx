@@ -24,6 +24,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getClinicData, clearSession } from "@/lib/clinic";
+import { usePlan } from "@/contexts/PlanContext";
+import { Lock } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,16 +34,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const navItems = [
+type NavItem = {
+  label: string;
+  href: string;
+  icon: typeof LayoutDashboard;
+  planFeature?: "listaEspera" | "relatorioMensal" | "multipleLinks";
+  planLabel?: string;
+};
+
+const navItems: NavItem[] = [
   { label: "Dashboard", href: "/app", icon: LayoutDashboard },
   { label: "Agendamentos", href: "/app/agendamentos", icon: CalendarCheck },
-  { label: "Lista de Espera", href: "/app/lista-de-espera", icon: UsersRound },
+  { label: "Lista de Espera", href: "/app/lista-de-espera", icon: UsersRound, planFeature: "listaEspera", planLabel: "Plano Pro" },
   { label: "Links", href: "/app/links", icon: Link2 },
   { label: "Avaliações", href: "/app/avaliacoes", icon: Star },
   { label: "Pacientes", href: "/app/pacientes", icon: Users },
   { label: "Prontuários", href: "/app/prontuarios", icon: FileText },
   { label: "Financeiro", href: "/app/financeiro", icon: CreditCard },
-  { label: "Relatórios", href: "/app/relatorios", icon: BarChart3 },
+  { label: "Relatórios", href: "/app/relatorios", icon: BarChart3, planFeature: "relatorioMensal", planLabel: "Plano Supreme" },
 ];
 
 const pageTitles: Record<string, string> = {
@@ -125,6 +135,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const clinic = useClinic();
+  const { planLimits, planTier } = usePlan();
   useSyncClinicToDB();
 
   const pageTitle = pageTitles[location] ?? "MedFlow";
@@ -133,6 +144,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
     clearSession();
     setLocation("/entrar");
   };
+
+  const planBadge: Record<string, string> = { essencial: "Essencial", pro: "Pro", supreme: "Supreme" };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -150,6 +163,29 @@ export default function AppLayout({ children }: AppLayoutProps) {
           const isActive =
             location === item.href ||
             (item.href !== "/app" && location.startsWith(item.href));
+
+          // Check if this feature is locked for the current plan
+          const isLocked =
+            item.planFeature != null &&
+            planLimits[item.planFeature] === false;
+
+          if (isLocked) {
+            return (
+              <div
+                key={item.href}
+                title={`Disponível no ${item.planLabel ?? "plano superior"}`}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground/50 cursor-not-allowed select-none"
+              >
+                <item.icon className="w-5 h-5 shrink-0" />
+                <span className="flex-1">{item.label}</span>
+                <span className="flex items-center gap-1 text-[10px] font-semibold bg-muted px-1.5 py-0.5 rounded-full">
+                  <Lock className="w-2.5 h-2.5" />
+                  {item.planLabel}
+                </span>
+              </div>
+            );
+          }
+
           return (
             <Link
               key={item.href}
@@ -168,6 +204,24 @@ export default function AppLayout({ children }: AppLayoutProps) {
           );
         })}
       </nav>
+
+      {/* Plan badge */}
+      <div className="px-4 pb-2">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/60 text-xs text-muted-foreground">
+          <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+          <span>Plano <strong className="text-foreground">{planBadge[planTier] ?? planTier}</strong></span>
+          {planTier === "essencial" && (
+            <a
+              href="https://pay.cakto.com.br/dqj8q3m"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-auto text-primary font-semibold hover:underline"
+            >
+              Fazer upgrade
+            </a>
+          )}
+        </div>
+      </div>
 
       <div className="px-4 py-4 border-t border-border/50">
         <Link

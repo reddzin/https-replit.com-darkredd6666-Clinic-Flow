@@ -30,6 +30,7 @@ import PacienteLogin from "@/pages/paciente/Login";
 import PacienteDashboard from "@/pages/paciente/Dashboard";
 import { getSession } from "@/lib/clinic";
 import { getPatientSession } from "@/lib/patient";
+import { PlanContext, DEFAULT_LIMITS, type PlanTier, type PlanLimits } from "@/contexts/PlanContext";
 
 const queryClient = new QueryClient();
 
@@ -37,7 +38,15 @@ interface SubStatus {
   canAccess: boolean;
   status: string;
   paidUntil: string | null;
+  planTier?: PlanTier;
+  planLimits?: PlanLimits;
 }
+
+const FALLBACK_LIMITS_BY_TIER: Record<PlanTier, PlanLimits> = {
+  essencial: { maxDoctors: 1, maxAppointmentsPerMonth: 30, listaEspera: false, lembrete30min: false, dashboardCompleto: false, multipleLinks: false, relatorioMensal: false },
+  pro: { maxDoctors: 5, maxAppointmentsPerMonth: Infinity, listaEspera: true, lembrete30min: true, dashboardCompleto: true, multipleLinks: false, relatorioMensal: false },
+  supreme: { maxDoctors: Infinity, maxAppointmentsPerMonth: Infinity, listaEspera: true, lembrete30min: true, dashboardCompleto: true, multipleLinks: true, relatorioMensal: true },
+};
 
 /** Wraps /app/* routes: redirects unauthenticated users and those who haven't
  *  completed onboarding before they can access any protected page. */
@@ -96,7 +105,11 @@ function ProtectedApp() {
     return <Paywall status={sub.status} onRetry={checkSub} />;
   }
 
+  const planTier = sub?.planTier ?? "pro";
+  const planLimits = sub?.planLimits ?? FALLBACK_LIMITS_BY_TIER[planTier] ?? DEFAULT_LIMITS;
+
   return (
+    <PlanContext.Provider value={{ planTier, planLimits }}>
     <AppLayout>
       <Switch>
         <Route path="/app" component={Dashboard} />
@@ -113,6 +126,7 @@ function ProtectedApp() {
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
+    </PlanContext.Provider>
   );
 }
 
