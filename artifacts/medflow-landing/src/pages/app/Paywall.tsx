@@ -1,7 +1,27 @@
-import { AlertTriangle, RefreshCw, ExternalLink } from "lucide-react";
+import { AlertTriangle, RefreshCw, ExternalLink, Zap, Star, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const CAKTO_CHECKOUT_URL = "https://cakto.com.br/checkout";
+const PLANS = [
+  {
+    name: "Essencial",
+    price: "R$79/mês",
+    icon: Zap,
+    url: "https://pay.cakto.com.br/4aexe9z_913925",
+  },
+  {
+    name: "Pro",
+    price: "R$137/mês",
+    icon: Star,
+    url: "https://pay.cakto.com.br/dqj8q3m",
+    highlight: true,
+  },
+  {
+    name: "Supreme",
+    price: "R$197/mês",
+    icon: Crown,
+    url: "https://pay.cakto.com.br/ms5g33h",
+  },
+];
 
 const STATUS_LABELS: Record<string, { title: string; desc: string; color: string }> = {
   canceled: {
@@ -58,26 +78,31 @@ export default function Paywall({ status, onRetry }: PaywallProps) {
           <p className="text-gray-500 text-sm leading-relaxed">{info.desc}</p>
         </div>
 
-        <div className="space-y-3">
-          <Button
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
-            onClick={() => window.open(CAKTO_CHECKOUT_URL, "_blank")}
-          >
-            <ExternalLink className="w-4 h-4" />
-            Assinar agora
-          </Button>
-
-          {onRetry && (
+        <div className="space-y-2">
+          {PLANS.map((plan) => (
             <Button
-              variant="outline"
-              className="w-full gap-2"
-              onClick={onRetry}
+              key={plan.name}
+              className={`w-full gap-2 ${plan.highlight ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-white hover:bg-gray-50 text-gray-800 border border-gray-200"}`}
+              onClick={() => window.open(plan.url, "_blank")}
             >
-              <RefreshCw className="w-4 h-4" />
-              Já assinei — verificar acesso
+              <plan.icon className="w-4 h-4" />
+              <span className="font-semibold">{plan.name}</span>
+              <span className="text-sm opacity-75">— {plan.price}</span>
+              <ExternalLink className="w-3 h-3 ml-auto" />
             </Button>
-          )}
+          ))}
         </div>
+
+        {onRetry && (
+          <Button
+            variant="outline"
+            className="w-full gap-2"
+            onClick={onRetry}
+          >
+            <RefreshCw className="w-4 h-4" />
+            Já assinei — verificar acesso
+          </Button>
+        )}
 
         <p className="text-xs text-gray-400">
           Em caso de dúvidas, entre em contato com o suporte MedFlow.

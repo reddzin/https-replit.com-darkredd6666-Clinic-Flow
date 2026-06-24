@@ -12,6 +12,12 @@ import {
 } from "lucide-react";
 import { saveSession, getSession, type Plan } from "@/lib/clinic";
 
+const CHECKOUT_URLS: Record<Plan, string> = {
+  essencial: "https://pay.cakto.com.br/4aexe9z_913925",
+  pro: "https://pay.cakto.com.br/dqj8q3m",
+  supreme: "https://pay.cakto.com.br/ms5g33h",
+};
+
 const plans: {
   id: Plan;
   name: string;
@@ -89,7 +95,7 @@ export default function CadastroPlanos() {
 
   function handleContinue() {
     saveSession({ plan: selected });
-    setLocation("/cadastro/pagamento");
+    window.open(CHECKOUT_URLS[selected], "_blank");
   }
 
   return (

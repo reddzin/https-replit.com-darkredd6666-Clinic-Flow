@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useLocation } from "wouter";
 
 const plans = [
   {
@@ -20,6 +19,7 @@ const plans = [
     ],
     popular: false,
     buttonClass: "bg-[#166534] hover:bg-[#14532d] text-white border-0",
+    checkoutUrl: "https://pay.cakto.com.br/4aexe9z_913925",
   },
   {
     name: "Pro",
@@ -38,6 +38,7 @@ const plans = [
     ],
     popular: true,
     buttonClass: "bg-[#16a34a] hover:bg-[#166534] text-white border-0",
+    checkoutUrl: "https://pay.cakto.com.br/dqj8q3m",
   },
   {
     name: "Supreme",
@@ -56,12 +57,11 @@ const plans = [
     ],
     popular: false,
     buttonClass: "bg-[#166534] hover:bg-[#14532d] text-white border-0",
+    checkoutUrl: "https://pay.cakto.com.br/ms5g33h",
   },
 ];
 
 export function Pricing() {
-  const [, setLocation] = useLocation();
-
   return (
     <section id="precos" className="py-24 bg-white scroll-mt-20">
       <div className="container mx-auto px-4">
@@ -111,10 +111,10 @@ export function Pricing() {
               <div className="mt-8">
                 <Button
                   className={`w-full h-12 rounded-xl text-base ${plan.buttonClass}`}
-                  onClick={() => setLocation("/cadastro")}
+                  onClick={() => window.open(plan.checkoutUrl, "_blank")}
                   data-testid={`button-plan-${plan.name.toLowerCase()}`}
                 >
-                  Começar Teste Grátis
+                  Assinar agora
                 </Button>
               </div>
             </motion.div>
